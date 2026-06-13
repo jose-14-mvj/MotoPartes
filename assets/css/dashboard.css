@@ -1,0 +1,661 @@
+/* ============================================================
+   MOTOREPUESTOS HONDA — Dashboard CSS
+   Paleta oficial Honda: Rojo #CC0000 + Negro #0a0a0a + Plata
+   ============================================================ */
+
+:root {
+    /* Marca Honda */
+    --honda-red:        #CC0000;
+    --honda-red-dark:   #990000;
+    --honda-red-light:  #FF2222;
+    --honda-silver:     #C0C0C0;
+    --honda-silver-light: #E8E8E8;
+
+    /* Estructura */
+    --dark:     #111827;
+    --dark-2:   #1f2937;
+    --sidebar:  #0a0a0a;
+    --bg:       #f4f5f7;
+    --white:    #ffffff;
+    --border:   #e0e0e0;
+    --text:     #6b7280;
+
+    /* Semánticos */
+    --success:  #16a34a;
+    --warning:  #f59e0b;
+    --info:     #2563eb;
+
+    /* Sombras */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+    --shadow:    0 4px 20px rgba(0,0,0,.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+}
+
+/* ==========================
+   RESET
+========================== */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    overflow-x: hidden;
+}
+
+/* ==========================
+   OVERLAY MÓVIL
+========================== */
+
+#overlay-menu {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    opacity: 0;
+    visibility: hidden;
+    transition: .3s ease;
+    z-index: 9998;
+}
+
+#overlay-menu.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ==========================
+   WRAPPER
+========================== */
+
+#wrapper-dashboard {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+}
+
+/* ==========================
+   SIDEBAR
+========================== */
+
+.sidebar-admin {
+    background: var(--sidebar);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem 1rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+/* Cabecera del sidebar */
+.sidebar-header {
+    text-align: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+.brand-logo {
+    width: 140px;
+    margin: 0 auto 0.75rem;
+}
+
+.brand-logo img {
+    width: 100%;
+    display: block;
+}
+
+.sidebar-header h2 {
+    color: var(--honda-silver);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Menú */
+.sidebar-menu {
+    list-style: none;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.menu-link {
+    text-decoration: none;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    transition: all .25s ease;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.menu-link i {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.menu-link:hover {
+    background: #1a1a1a;
+    color: white;
+    transform: translateX(4px);
+}
+
+.menu-link.active {
+    background: var(--honda-red);
+    color: white;
+}
+
+/* Botón logout */
+.btn-logout {
+    width: 100%;
+    border: 1px solid var(--honda-red);
+    background: transparent;
+    color: var(--honda-red);
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all .25s ease;
+}
+
+.btn-logout:hover {
+    background: var(--honda-red);
+    color: white;
+}
+
+/* ==========================
+   MAIN
+========================== */
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ==========================
+   TOPBAR
+========================== */
+
+.topbar-admin {
+    background: white;
+    height: 72px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    border-bottom: 2px solid var(--honda-red);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.btn-menu-mobile {
+    display: none;
+    border: none;
+    background: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--dark);
+    line-height: 1;
+}
+
+.topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #f3f4f6;
+    padding: 0.7rem 1.1rem;
+    border-radius: 999px;
+    width: 360px;
+    transition: .2s;
+}
+
+.topbar-search:focus-within {
+    box-shadow: 0 0 0 2px var(--honda-red);
+}
+
+.topbar-search i {
+    color: var(--honda-red);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.topbar-search input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.875rem;
+    color: var(--dark);
+}
+
+.topbar-search input::placeholder {
+    color: var(--text);
+}
+
+.topbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.profile-name {
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--dark);
+}
+
+.profile-role {
+    font-size: 0.72rem;
+    color: var(--text);
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--honda-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.profile-avatar i {
+    font-size: 1.3rem;
+}
+
+/* ==========================
+   CONTENIDO PRINCIPAL
+========================== */
+
+.dashboard-analytics,
+.dashboard-recent {
+    padding: 2rem;
+}
+
+.analytics-header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 0.3rem;
+}
+
+.analytics-header p {
+    color: var(--text);
+    font-size: 0.875rem;
+}
+
+/* ==========================
+   KPIs
+========================== */
+
+.kpi-grid {
+    margin-top: 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+    border-bottom: 3px solid transparent;
+    transition: all .25s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Acento inferior según tipo */
+.kpi-card.repuestos { border-color: var(--honda-red); }
+.kpi-card.ventas    { border-color: var(--success); }
+.kpi-card.pedidos   { border-color: var(--info); }
+.kpi-card.clientes  { border-color: var(--warning); }
+
+.icon-kpi {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.icon-kpi.repuestos { background: #fee2e2; color: var(--honda-red); }
+.icon-kpi.ventas    { background: #dcfce7; color: var(--success); }
+.icon-kpi.pedidos   { background: #dbeafe; color: var(--info); }
+.icon-kpi.clientes  { background: #fef3c7; color: var(--warning); }
+
+.kpi-card h3 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+
+.kpi-card .kpi-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+}
+
+.kpi-card .kpi-delta {
+    font-size: 0.72rem;
+    color: var(--success);
+    font-weight: 600;
+    margin-top: 0.2rem;
+}
+
+/* ==========================
+   TABLA
+========================== */
+
+.recent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.recent-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.btn-ver-todos {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--honda-red);
+    text-decoration: none;
+    background: #fee2e2;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    transition: .2s;
+}
+
+.btn-ver-todos:hover {
+    background: var(--honda-red);
+    color: white;
+}
+
+.table-semantic-admin {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.table-semantic-admin thead {
+    background: #f9fafb;
+    border-bottom: 2px solid var(--border);
+}
+
+.table-semantic-admin th {
+    text-align: left;
+    padding: 1rem 1.1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text);
+}
+
+.table-semantic-admin td {
+    padding: 0.9rem 1.1rem;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+.table-semantic-admin tbody tr {
+    transition: background .15s;
+}
+
+.table-semantic-admin tbody tr:hover {
+    background: #fafafa;
+}
+
+.table-thumb {
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #f3f4f6;
+}
+
+.table-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+code {
+    color: var(--honda-red);
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-danger  { background: #fee2e2; color: var(--honda-red); }
+.badge-info    { background: #dbeafe; color: #1d4ed8; }
+
+.table-loading {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text);
+}
+
+/* ==========================
+   SCROLLBAR
+========================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--honda-red);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--honda-red-dark);
+}
+
+/* ==========================
+   TABLET  (≤992px)
+========================== */
+
+@media (max-width: 992px) {
+
+    #wrapper-dashboard {
+        grid-template-columns: 72px 1fr;
+    }
+
+    .sidebar-header h2,
+    .menu-link span,
+    .btn-logout span {
+        display: none;
+    }
+
+    .brand-logo {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+    }
+
+    .menu-link {
+        justify-content: center;
+        padding: 0.85rem;
+    }
+
+    .btn-logout {
+        justify-content: center;
+    }
+
+    .topbar-search {
+        width: 220px;
+    }
+}
+
+/* ==========================
+   MÓVIL  (≤768px)
+========================== */
+
+@media (max-width: 768px) {
+
+    #wrapper-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-menu-mobile {
+        display: block;
+    }
+
+    .sidebar-admin {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        width: 260px;
+        height: 100vh;
+        z-index: 9999;
+        padding: 1.5rem;
+        background:
+            linear-gradient(rgba(0,0,0,.88), rgba(0,0,0,.95)),
+            url('../../assets/img/fondo.png') center/cover;
+        transition: left .32s cubic-bezier(.4,0,.2,1);
+        overflow-y: auto;
+    }
+
+    /* Texto de menú visible en móvil al abrir */
+    .sidebar-admin .menu-link {
+        justify-content: flex-start;
+    }
+
+    .sidebar-admin .menu-link span,
+    .sidebar-admin .sidebar-header h2,
+    .sidebar-admin .btn-logout span {
+        display: inline;
+    }
+
+    .sidebar-admin.show {
+        left: 0;
+    }
+
+    .topbar-admin {
+        height: auto;
+        padding: 0.9rem 1rem;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .topbar-search {
+        width: 100%;
+        order: 3;
+    }
+
+    .profile-name,
+    .profile-role {
+        display: none;
+    }
+
+    .dashboard-analytics,
+    .dashboard-recent {
+        padding: 1rem;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .table-semantic-admin {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* ==========================
+   EXTRA PEQUEÑO  (≤480px)
+========================== */
+
+@media (max-width: 480px) {
+
+    .analytics-header h1 {
+        font-size: 1.35rem;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 1.5rem;
+    }
+
+    .sidebar-admin {
+        width: 240px;
+    }
+
+    .brand-logo {
+        width: 48px;
+        height: 48px;
+    }
+}

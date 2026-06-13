@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Productos | Vendedor — MotoRepRacing10</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root{--rojo:#DC0000;--rojo-vivo:#FF2424;--negro:#080808;--panel:#111111;--card:#161616;--card2:#1c1c1c;--borde:rgba(255,255,255,0.07);--texto:#F0F0F0;--muted:#777;--verde:#22C55E;--amarillo:#F59E0B;--azul:#3B82F6;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--negro);color:var(--texto);min-height:100vh;}
+.nav{position:sticky;top:0;z-index:100;background:rgba(8,8,8,.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(220,0,0,.3);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;}
+.nav-brand{font-weight:900;font-size:1.1rem;letter-spacing:-.02em;color:#fff;}
+.nav-brand span{color:var(--rojo-vivo);}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{padding:6px 14px;border-radius:6px;font-size:.875rem;font-weight:500;color:var(--muted);text-decoration:none;transition:all .2s;}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.05);}
+.nav-links a.activo{color:var(--rojo-vivo);background:rgba(220,0,0,.1);}
+.btn-salir{background:rgba(220,0,0,.08);border:1px solid rgba(220,0,0,.3);color:#f87171;border-radius:7px;padding:6px 14px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-salir:hover{background:rgba(220,0,0,.18);color:#fff;}
+.contenedor{max-width:1280px;margin:0 auto;padding:2rem;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.page-header h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;}
+.page-header p{color:var(--muted);font-size:.875rem;margin-top:2px;}
+.btn-primary{background:linear-gradient(135deg,var(--rojo),#a00);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:.875rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-primary:hover{filter:brightness(1.15);transform:translateY(-1px);}
+.btn-secondary{background:rgba(255,255,255,.05);border:1px solid var(--borde);color:var(--texto);border-radius:9px;padding:10px 20px;font-size:.875rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-secondary:hover{background:rgba(255,255,255,.08);}
+.btn-sm{padding:6px 14px;font-size:.8rem;}
+.filtros-row{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.input-buscar{background:var(--card);border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:8px 14px;font-size:.85rem;flex:1;min-width:200px;transition:border-color .2s;}
+.input-buscar:focus{outline:none;border-color:rgba(220,0,0,.5);}
+.input-buscar::placeholder{color:var(--muted);}
+.panel{background:var(--panel);border:1px solid var(--borde);border-radius:14px;overflow:hidden;margin-bottom:1.5rem;}
+.panel-header{padding:1.1rem 1.5rem;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.tabla-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 1.25rem 10px;text-align:left;white-space:nowrap;}
+tbody tr{border-top:1px solid var(--borde);transition:background .15s;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+tbody td{padding:11px 1.25rem;font-size:.85rem;vertical-align:middle;}
+.stock-ok{color:var(--verde);font-weight:700;}
+.stock-bajo{color:#f87171;font-weight:700;}
+.badge-marca{background:rgba(255,255,255,.06);border:1px solid var(--borde);color:var(--texto);border-radius:5px;padding:2px 8px;font-size:.72rem;font-weight:600;}
+/* PAGINACIÓN */
+.paginacion{display:flex;gap:6px;align-items:center;justify-content:center;padding:1.25rem;}
+.pag-btn{background:var(--card2);border:1px solid var(--borde);color:var(--muted);border-radius:6px;padding:6px 12px;font-size:.8rem;cursor:pointer;transition:all .2s;}
+.pag-btn:hover{border-color:rgba(220,0,0,.4);color:#fff;}
+.pag-btn.activo{background:rgba(220,0,0,.15);border-color:rgba(220,0,0,.5);color:var(--rojo-vivo);}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.overlay.visible{opacity:1;pointer-events:all;}
+.modal-box{background:#101010;border:1px solid var(--borde);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(20px);transition:transform .3s;}
+.overlay.visible .modal-box{transform:translateY(0);}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;}
+.modal-header h2{font-size:1rem;font-weight:700;}
+.modal-body{padding:1.5rem;}
+.modal-footer{padding:1.25rem 1.5rem;border-top:1px solid var(--borde);display:flex;gap:10px;}
+.btn-icon{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:5px;transition:all .2s;font-size:.9rem;}
+.btn-icon:hover{color:#fff;}
+.form-group{margin-bottom:1rem;}
+.form-label{display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;}
+.form-input,.form-select-dark{width:100%;background:var(--card2);border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:10px 14px;font-size:.875rem;transition:border-color .2s;font-family:inherit;}
+.form-input:focus,.form-select-dark:focus{outline:none;border-color:rgba(220,0,0,.5);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-textarea{width:100%;background:var(--card2);border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:10px 14px;font-size:.875rem;resize:vertical;min-height:70px;font-family:inherit;}
+.form-textarea:focus{outline:none;border-color:rgba(220,0,0,.5);}
+.sep{height:1px;background:var(--borde);margin:.75rem 0;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(220,0,0,.2);border-top-color:var(--rojo-vivo);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.cargando{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem;padding:2rem 1.5rem;}
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);}
+.empty i{font-size:2rem;display:block;margin-bottom:8px;}
+.toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1a1a1a;border:1px solid var(--borde);border-radius:10px;padding:12px 18px;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:10px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.6);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.toast.show{transform:translateX(0);}
+.toast.verde{border-left:3px solid var(--verde);}
+.toast.rojo{border-left:3px solid var(--rojo-vivo);}
+@media(max-width:600px){.contenedor{padding:1rem;}.filtros-row{flex-direction:column;}.form-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand"><span>RACING</span>10 · Vendedor</span>
+  <div class="nav-links">
+    <a href="vendedor-dashboard.html">Dashboard</a>
+    <a href="vendedor-productos.html" class="activo">Productos</a>
+    <a href="vendedor-pedidos.html">Pedidos</a>
+    <a href="vendedor-envios.html">Envíos</a>
+  </div>
+  <button class="btn-salir" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Salir</button>
+</nav>
+
+<div class="contenedor">
+  <div class="page-header">
+    <div>
+      <h1>Catálogo de Productos</h1>
+      <p>Consulta, edición de precios y registro de nuevos repuestos</p>
+    </div>
+    <button class="btn-primary" onclick="abrirModalNuevo()">
+      <i class="bi bi-plus-circle-fill"></i> Nuevo repuesto
+    </button>
+  </div>
+
+  <div class="filtros-row">
+    <input type="text" class="input-buscar" id="filtro-buscar" placeholder="Buscar por nombre, código o marca..." onkeydown="if(event.key==='Enter')buscarEnServidor()">
+    <button class="btn-secondary btn-sm" onclick="buscarEnServidor()"><i class="bi bi-search"></i> Buscar</button>
+    <button class="btn-secondary btn-sm" onclick="limpiarBusqueda()"><i class="bi bi-x"></i> Limpiar</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Inventario</span>
+      <span id="info-total" style="font-size:.8rem;color:var(--muted);">0 repuestos</span>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Marca</th>
+            <th>Precio venta</th>
+            <th>Stock</th>
+            <th style="text-align:center;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body">
+          <tr><td colspan="6"><div class="cargando"><div class="spinner"></div> Cargando productos...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="paginacion" id="paginacion"></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR/NUEVO -->
+<div class="overlay" id="overlay-modal" onclick="cerrarModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Editar producto</h2>
+      <button class="btn-icon" onclick="cerrarModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+
+      <!-- CAMPOS SOLO PARA NUEVO -->
+      <div id="campos-nuevo" style="display:none;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Código *</label>
+            <input type="text" class="form-input" id="nuevo-codigo" placeholder="MOT001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input type="text" class="form-input" id="nuevo-nombre" placeholder="Nombre del repuesto">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" id="nuevo-desc" placeholder="Descripción técnica..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marca</label>
+            <select class="form-select-dark" id="nuevo-marca"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subcategoría</label>
+            <select class="form-select-dark" id="nuevo-subcat"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio de compra (Bs.) *</label>
+          <input type="number" class="form-input" id="nuevo-precio-compra" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="sep"></div>
+      </div>
+
+      <!-- PRECIO VENTA (siempre visible) -->
+      <div class="form-group">
+        <label class="form-label">Precio de venta (Bs.) *</label>
+        <input type="number" class="form-input" id="edit-precio" step="0.01" min="0" placeholder="0.00" style="border-color:rgba(220,0,0,.4);">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" style="flex:1;" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" style="flex:1;" id="btn-guardar-modal" onclick="guardarProducto()">
+        <i class="bi bi-check-circle"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script>
+const API='http://localhost:8000/api';
+let paginaActual=1;let busquedaActual='';
+let marcasCache=[];let subcatsCache=[];
+
+function toast(msg,tipo='verde'){
+  const t=document.createElement('div');t.className=`toast ${tipo}`;
+  t.innerHTML=`<i class="bi bi-${tipo==='verde'?'check-circle':'exclamation-circle'}" style="color:var(--${tipo==='verde'?'verde':'rojo-vivo'})"></i> ${msg}`;
+  document.getElementById('toasts').appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3000);
+}
+function hdrs(){return{'Authorization':'Bearer '+obtenerToken(),'Accept':'application/json','Content-Type':'application/json'};}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  verificarRol(3);
+  cargarProductos();
+});
+
+async function cargarProductos(pagina=1,buscar=''){
+  const tbody=document.getElementById('tabla-body');
+  tbody.innerHTML=`<tr><td colspan="6"><div class="cargando"><div class="spinner"></div> Cargando...</div></td></tr>`;
+  document.getElementById('paginacion').innerHTML='';
+  let url=`${API}/productos?page=${pagina}`;
+  if(buscar.trim()) url+=`&buscar=${encodeURIComponent(buscar.trim())}`;
+  try{
+    const r=await fetch(url,{headers:hdrs()});
+    if(r.status===401){cerrarSesion();return;}
+    const datos=await r.json();
+    const paginado=datos.data;
+    const lista=paginado?.data??(Array.isArray(paginado)?paginado:[]);
+    const total=paginado?.total??lista.length;
+    const lastPage=paginado?.last_page??1;
+    document.getElementById('info-total').textContent=`${total} repuestos`;
+    if(!lista.length){
+      tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><i class="bi bi-box"></i><p>Sin productos encontrados</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML=lista.map(p=>{
+      const stock=p.stock?.cantidad_actual??0;
+      const stockCls=stock>5?'stock-ok':'stock-bajo';
+      return `<tr>
+        <td style="font-family:monospace;color:var(--muted);">${p.codigo??'—'}</td>
+        <td style="font-weight:600;">${p.nombre}</td>
+        <td><span class="badge-marca">${p.marca?.nombre??'—'}</span></td>
+        <td style="font-weight:700;color:#fff;">Bs.${parseFloat(p.precio_venta??0).toFixed(2)}</td>
+        <td class="${stockCls}">${stock} uds</td>
+        <td style="text-align:center;">
+          <button onclick="abrirModal(${p.id},'${(p.nombre||'').replace(/'/g,"\\'")}',${p.precio_venta??0})"
+            style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:var(--azul);border-radius:7px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;"
+            onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.1)'">
+            <i class="bi bi-pencil-square"></i> Editar precio
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+    renderPaginacion(pagina,lastPage);
+  }catch(e){
+    console.error(e);
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><i class="bi bi-wifi-off"></i><p>Sin conexión al servidor</p></div></td></tr>`;
+  }
+}
+
+function renderPaginacion(actual,total){
+  const div=document.getElementById('paginacion');
+  if(total<=1){div.innerHTML='';return;}
+  let html='';
+  if(actual>1) html+=`<button class="pag-btn" onclick="irPagina(${actual-1})"><i class="bi bi-chevron-left"></i></button>`;
+  for(let i=Math.max(1,actual-2);i<=Math.min(total,actual+2);i++)
+    html+=`<button class="pag-btn ${i===actual?'activo':''}" onclick="irPagina(${i})">${i}</button>`;
+  if(actual<total) html+=`<button class="pag-btn" onclick="irPagina(${actual+1})"><i class="bi bi-chevron-right"></i></button>`;
+  div.innerHTML=`<span style="font-size:.78rem;color:var(--muted);margin-right:4px;">Pág. ${actual}/${total}</span>${html}`;
+}
+function irPagina(n){paginaActual=n;cargarProductos(paginaActual,busquedaActual);}
+function buscarEnServidor(){busquedaActual=document.getElementById('filtro-buscar').value;paginaActual=1;cargarProductos(1,busquedaActual);}
+function limpiarBusqueda(){document.getElementById('filtro-buscar').value='';busquedaActual='';paginaActual=1;cargarProductos();}
+
+async function cargarOpciones(){
+  try{
+    const [rM,rS]=await Promise.all([
+      fetch(`${API}/marcas`,{headers:hdrs()}),
+      fetch(`${API}/subcategorias`,{headers:hdrs()})
+    ]);
+    const dM=await rM.json();const dS=await rS.json();
+    marcasCache=Array.isArray(dM)?dM:(dM.data??[]);
+    subcatsCache=Array.isArray(dS)?dS:(dS.data??[]);
+    document.getElementById('nuevo-marca').innerHTML=marcasCache.map(m=>`<option value="${m.id}">${m.nombre}</option>`).join('');
+    document.getElementById('nuevo-subcat').innerHTML=subcatsCache.map(s=>`<option value="${s.id}">${s.nombre}${s.categoria?' ('+s.categoria.nombre+')':''}</option>`).join('');
+  }catch(e){console.error(e);}
+}
+
+function abrirModal(id,nombre,precio){
+  document.getElementById('edit-id').value=id;
+  document.getElementById('modal-titulo').textContent=`Editar precio: ${nombre}`;
+  document.getElementById('edit-precio').value=precio;
+  document.getElementById('campos-nuevo').style.display='none';
+  document.getElementById('overlay-modal').classList.add('visible');
+}
+function abrirModalNuevo(){
+  document.getElementById('edit-id').value='';
+  document.getElementById('modal-titulo').textContent='Registrar nuevo repuesto';
+  document.getElementById('edit-precio').value='';
+  document.getElementById('nuevo-codigo').value='';
+  document.getElementById('nuevo-nombre').value='';
+  document.getElementById('nuevo-desc').value='';
+  document.getElementById('nuevo-precio-compra').value='';
+  document.getElementById('campos-nuevo').style.display='block';
+  if(!marcasCache.length) cargarOpciones();
+  document.getElementById('overlay-modal').classList.add('visible');
+}
+function cerrarModal(){document.getElementById('overlay-modal').classList.remove('visible');}
+
+async function guardarProducto(){
+  const id=document.getElementById('edit-id').value;
+  const precio=document.getElementById('edit-precio').value;
+  if(precio===''||isNaN(precio)||Number(precio)<0){toast('Precio inválido','rojo');return;}
+  const esNuevo=!id;
+  let url=`${API}/productos`,method='POST',body;
+  if(esNuevo){
+    const codigo=document.getElementById('nuevo-codigo').value.trim();
+    const nombre=document.getElementById('nuevo-nombre').value.trim();
+    if(!codigo||!nombre){toast('Código y nombre son requeridos','rojo');return;}
+    const precioCompra=document.getElementById('nuevo-precio-compra').value;
+    if(precioCompra===''||isNaN(precioCompra)){toast('Precio de compra inválido','rojo');return;}
+    body=JSON.stringify({
+      codigo,nombre,descripcion:document.getElementById('nuevo-desc').value,
+      marca_id:document.getElementById('nuevo-marca').value,
+      subcategoria_id:document.getElementById('nuevo-subcat').value,
+      estado_id:4,precio_compra:precioCompra,precio_venta:precio
+    });
+  }else{
+    url+=`/${id}`;method='PUT';
+    body=JSON.stringify({precio_venta:precio});
+  }
+  const btn=document.getElementById('btn-guardar-modal');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div>';
+  try{
+    const r=await fetch(url,{method,headers:hdrs(),body});
+    if(!r.ok){
+      const d=await r.json().catch(()=>({}));
+      const msg=d.errors?Object.values(d.errors).map(e=>e[0]).join(' '):(d.message||'Error de validación');
+      throw new Error(msg);
+    }
+    toast(esNuevo?'Producto registrado correctamente':'Precio actualizado','verde');
+    cerrarModal();cargarProductos(paginaActual,busquedaActual);
+  }catch(e){toast(e.message,'rojo');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-check-circle"></i> Guardar';}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Envío — MotoRepRacing10</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --rojo:        #DC0000;
+    --rojo-oscuro: #A30000;
+    --rojo-suave:  #FF2424;
+    --negro:       #0A0A0A;
+    --negro-mid:   #121212;
+    --negro-card:  #161616;
+    --blanco:      #FFFFFF;
+    --gris-mid:    #E0E0E0;
+    --gris-texto:  #A0A0A0;
+    --verde:       #22c55e;
+    --amarillo:    #fbbf24;
+    --azul:        #60a5fa;
+    --font-main:   'Segoe UI', system-ui, sans-serif;
+    --transition:  0.25s cubic-bezier(0.4,0,0.2,1);
+    --border:      1px solid rgba(255,255,255,0.08);
+    --shadow:      0 10px 30px rgba(0,0,0,0.5);
+    --radius:      14px;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-main); background: var(--negro); color: var(--blanco); min-height: 100vh; line-height: 1.6; }
+a { text-decoration: none; color: inherit; }
+
+/* NAVBAR */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,10,0.95); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(220,0,0,0.35);
+    padding: 0 2rem; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.navbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; }
+.navbar-brand img { height: 36px; }
+.navbar-brand em { color: var(--rojo); font-style: normal; }
+.btn-back {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+    color: var(--gris-mid); border-radius: 8px; padding: 8px 14px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all var(--transition);
+}
+.btn-back:hover { border-color: rgba(255,255,255,0.3); color: var(--blanco); }
+
+/* PAGE */
+.page { max-width: 860px; margin: 0 auto; padding: 88px 2rem 4rem; }
+
+/* PANEL BASE */
+.panel {
+    background: var(--negro-card); border: var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+}
+.panel-header {
+    padding: 1.1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.panel-header-left { display: flex; align-items: center; gap: 10px; }
+.panel-header i { color: var(--rojo-suave); font-size: 1.1rem; }
+.panel-header h2 { font-size: 0.98rem; font-weight: 700; }
+.panel-body { padding: 1.5rem; }
+
+/* ESTADO BADGE */
+.estado-badge {
+    font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.badge-espera     { background: rgba(251,191,36,0.15);  color: var(--amarillo); }
+.badge-preparando { background: rgba(220,0,0,0.15);     color: #f87171; }
+.badge-camino     { background: rgba(96,165,250,0.15);  color: var(--azul); }
+.badge-entregado  { background: rgba(34,197,94,0.15);   color: var(--verde); }
+
+/* HERO INFO ENVÍO */
+.envio-hero {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;
+}
+@media(max-width:600px){ .envio-hero { grid-template-columns: 1fr; } }
+.info-card {
+    background: rgba(255,255,255,0.03); border: var(--border); border-radius: 10px;
+    padding: 14px 16px;
+}
+.info-label { font-size: 0.75rem; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.info-valor { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.info-valor i { color: var(--rojo-suave); font-size: 0.9rem; }
+
+/* TRACKING CODE */
+.tracking-box {
+    background: rgba(220,0,0,0.07); border: 1px solid rgba(220,0,0,0.25);
+    border-radius: 10px; padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-bottom: 1.5rem;
+}
+.tracking-code { font-size: 1.1rem; font-weight: 800; color: #ff4d4d; letter-spacing: 0.06em; }
+.btn-copy-track {
+    background: rgba(220,0,0,0.12); border: 1px solid rgba(220,0,0,0.3);
+    color: #ff4d4d; border-radius: 7px; padding: 7px 12px; cursor: pointer;
+    font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 5px;
+    transition: all var(--transition);
+}
+.btn-copy-track:hover { background: rgba(220,0,0,0.22); }
+
+/* ===== TIMELINE DE PASOS ===== */
+.timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+
+.tl-step {
+    display: flex; gap: 16px; position: relative;
+    padding-bottom: 28px;
+}
+.tl-step:last-child { padding-bottom: 0; }
+
+/* línea vertical */
+.tl-step:not(:last-child)::after {
+    content: '';
+    position: absolute; left: 19px; top: 40px;
+    width: 2px; bottom: 0;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.5s ease;
+}
+.tl-step.done:not(:last-child)::after  { background: var(--verde); }
+.tl-step.active:not(:last-child)::after { background: linear-gradient(to bottom, var(--rojo), rgba(220,0,0,0.15)); }
+
+/* icono círculo */
+.tl-icon {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+    color: var(--gris-texto); transition: all 0.4s ease; position: relative; z-index: 1;
+}
+.tl-step.done   .tl-icon { background: rgba(34,197,94,0.15);  border-color: var(--verde);      color: var(--verde); }
+.tl-step.active .tl-icon { background: rgba(220,0,0,0.15);    border-color: var(--rojo);       color: #ff4d4d; box-shadow: 0 0 14px rgba(220,0,0,0.35); animation: pulse-icon 2s ease-in-out infinite; }
+@keyframes pulse-icon { 0%,100%{box-shadow:0 0 14px rgba(220,0,0,0.35)} 50%{box-shadow:0 0 22px rgba(220,0,0,0.6)} }
+
+.tl-content { flex: 1; padding-top: 8px; }
+.tl-titulo { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
+.tl-step.done   .tl-titulo { color: var(--verde); }
+.tl-step.active .tl-titulo { color: var(--blanco); }
+.tl-step.pending .tl-titulo { color: var(--gris-texto); }
+.tl-desc { font-size: 0.83rem; color: var(--gris-texto); }
+.tl-fecha { font-size: 0.78rem; color: var(--gris-texto); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.tl-fecha i { color: var(--verde); }
+.tl-chip {
+    display: inline-block; margin-top: 6px;
+    background: rgba(220,0,0,0.1); border: 1px solid rgba(220,0,0,0.25);
+    color: #ff4d4d; font-size: 0.75rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px;
+}
+
+/* ===== RETIRO EN TIENDA ===== */
+.retiro-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px; padding: 2rem; text-align: center;
+}
+.retiro-anim {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: rgba(251,191,36,0.1); border: 2px solid rgba(251,191,36,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.4rem; animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.retiro-titulo { font-size: 1.2rem; font-weight: 800; }
+.retiro-desc { color: var(--gris-texto); font-size: 0.92rem; max-width: 380px; line-height: 1.65; }
+.retiro-steps { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 360px; }
+.retiro-step {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.03); border: var(--border);
+    border-radius: 10px; padding: 12px 14px; text-align: left;
+}
+.retiro-step-num {
+    width: 28px; height: 28px; border-radius: 50%; background: rgba(251,191,36,0.15);
+    border: 1px solid rgba(251,191,36,0.3); color: var(--amarillo);
+    font-size: 0.82rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.retiro-step-txt { font-size: 0.85rem; color: var(--gris-mid); }
+
+/* ESTADO ESPERA (sin envío creado aún) */
+.espera-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 16px; padding: 2.5rem 1rem; text-align: center;
+}
+.espera-anim {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(96,165,250,0.1); border: 2px solid rgba(96,165,250,0.25);
+    display: flex; align-items: center; justify-content: center; font-size: 2rem;
+}
+.espera-titulo { font-size: 1.1rem; font-weight: 800; }
+.espera-desc { color: var(--gris-texto); font-size: 0.9rem; max-width: 360px; line-height: 1.65; }
+.btn-recargar {
+    background: rgba(255,255,255,0.06); border: var(--border);
+    color: var(--gris-mid); border-radius: 8px; padding: 10px 20px;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all var(--transition);
+    display: flex; align-items: center; gap: 7px;
+}
+.btn-recargar:hover { background: rgba(255,255,255,0.1); color: var(--blanco); }
+
+/* PEDIDO INFO chips */
+.pedido-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; }
+.chip {
+    background: rgba(255,255,255,0.04); border: var(--border);
+    border-radius: 999px; padding: 5px 14px; font-size: 0.8rem; color: var(--gris-texto);
+    display: flex; align-items: center; gap: 5px;
+}
+.chip i { color: var(--rojo-suave); font-size: 0.82rem; }
+
+/* LOADER */
+.loader-wrap { display: flex; justify-content: center; align-items: center; padding: 5rem 0; flex-direction: column; gap: 16px; }
+.loader { width: 44px; height: 44px; border: 4px solid rgba(220,0,0,0.15); border-top-color: var(--rojo-suave); border-radius: 50%; animation: spin 0.75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-txt { font-size: 0.88rem; color: var(--gris-texto); }
+
+/* TOAST */
+.toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 600; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: #1a1a1a; border: var(--border); border-radius: 10px; padding: 12px 18px; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); min-width: 220px; }
+.toast.show { transform: translateX(0); }
+.toast.verde i { color: #4ade80; }
+.toast.rojo  i { color: var(--rojo-suave); }
+.toast.amarillo i { color: #fbbf24; }
+
+@media(max-width:500px){
+    .page { padding: 78px 1rem 3rem; }
+    .navbar { padding: 0 1rem; }
+    .tracking-box { flex-direction: column; text-align: center; }
+}
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="../index.html" class="navbar-brand">
+        <img src="../../../assets/img/logo.png" alt="Logo" onerror="this.style.display='none'">
+        MotoRep<em>Racing10</em>
+    </a>
+    <a href="../index.html" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Inicio
+    </a>
+</nav>
+
+<div class="page">
+
+    <!-- Encabezado -->
+    <div style="margin-bottom:1.75rem">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--rojo-suave);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">
+            <i class="bi bi-truck"></i> Seguimiento
+        </div>
+        <h1 style="font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-0.02em">
+            Estado de tu envío
+        </h1>
+        <p style="color:var(--gris-texto);font-size:0.92rem;margin-top:4px">
+            Pedido <span id="txt-pedido-id" style="color:var(--blanco);font-weight:700">#—</span>
+        </p>
+    </div>
+
+    <!-- Contenido dinámico -->
+    <div id="contenido-envio">
+        <div class="loader-wrap">
+            <div class="loader"></div>
+            <div class="loader-txt">Consultando tu envío...</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script>
+/* ================================================================
+   MAPA DE ESTADOS
+   Ajusta los IDs según tu tabla estados_general
+   Los estados de envío en tu BD según el controlador comentado:
+   12 = En camino   13 = Entregado
+   Para envío usamos los mismos que el pedido pero mapeamos también
+   los estados de texto que puede venir en estado.nombre
+================================================================ */
+const ESTADO_MAP = {
+    // Por estado_id (ajusta si tus IDs difieren)
+    9:  { paso:0, label:'Pedido recibido',  badge:'badge-espera',     badgeTxt:'Recibido'    },
+    10: { paso:1, label:'Preparando',       badge:'badge-preparando', badgeTxt:'Preparando'  },
+    11: { paso:1, label:'Preparando',       badge:'badge-preparando', badgeTxt:'Preparando'  },
+    12: { paso:2, label:'En camino',        badge:'badge-camino',     badgeTxt:'En camino'   },
+    13: { paso:3, label:'Entregado',        badge:'badge-entregado',  badgeTxt:'Entregado'   },
+};
+
+// Por nombre (fallback si el ID no coincide)
+function estadoPorNombre(nombre) {
+    const n = (nombre || '').toLowerCase();
+    if (n.includes('entregad'))  return { paso:3, badge:'badge-entregado',  badgeTxt:'Entregado'  };
+    if (n.includes('camino') || n.includes('enviado')) return { paso:2, badge:'badge-camino', badgeTxt:'En camino' };
+    if (n.includes('prepar') || n.includes('process')) return { paso:1, badge:'badge-preparando', badgeTxt:'Preparando' };
+    return { paso:0, badge:'badge-espera', badgeTxt:'Recibido' };
+}
+
+// Pasos del timeline para DELIVERY
+const PASOS_DELIVERY = [
+    { icon:'bi-bag-check',      titulo:'Pedido recibido',   desc:'Tu pedido fue registrado y está siendo revisado.' },
+    { icon:'bi-box-seam',       titulo:'Preparando',        desc:'Estamos empacando tus repuestos con cuidado.' },
+    { icon:'bi-truck',          titulo:'En camino',         desc:'Tu paquete está en ruta hacia tu destino.' },
+    { icon:'bi-house-check',    titulo:'Entregado',         desc:'¡Listo! Tu pedido llegó a su destino.' },
+];
+
+/* ================================================================
+   INIT
+================================================================ */
+const API_BASE = 'http://localhost:8000/api';
+const params   = new URLSearchParams(window.location.search);
+const pedidoId = params.get('pedido_id') || sessionStorage.getItem('ultimo_pedido_id');
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const token   = getToken();
+    const usuario = getUsuario();
+
+    if (!token || !usuario) {
+        toast('Debes iniciar sesión', 'amarillo');
+        setTimeout(() => window.location.href = '../login.html', 1400);
+        return;
+    }
+
+    if (pedidoId) {
+        document.getElementById('txt-pedido-id').textContent = `#${pedidoId}`;
+    }
+
+    await cargarEnvio();
+});
+
+/* ================================================================
+   CARGAR ENVÍO
+================================================================ */
+async function cargarEnvio() {
+    const token = getToken();
+    const wrap  = document.getElementById('contenido-envio');
+
+    try {
+        // Traemos todos los envíos del cliente (el backend filtra por user)
+        const resp = await fetch(`${API_BASE}/envios`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await resp.json();
+
+        if (!resp.ok || !data.status) throw new Error(data.message || 'Error al consultar envíos');
+
+        const lista = Array.isArray(data.data) ? data.data : [];
+
+        // Filtrar por pedido_id si tenemos uno
+        let envio = null;
+        if (pedidoId) {
+            envio = lista.find(e => String(e.pedido_id) === String(pedidoId));
+        } else {
+            // Si no hay pedido_id, mostramos el más reciente
+            envio = lista[0] || null;
+        }
+
+        // También intentamos traer info del pedido para saber si es retiro
+        let esTipoRetiro = false;
+        if (pedidoId) {
+            try {
+                const rp   = await fetch(`${API_BASE}/pedidos/${pedidoId}`, { headers:{ 'Authorization':`Bearer ${token}` } });
+                const dp   = await rp.json();
+                const ped  = dp.data;
+                // Si el envío tiene metodo_envio = retiro o similar
+                if (envio && (envio.metodo_envio || '').toLowerCase().includes('retiro')) esTipoRetiro = true;
+                // Mostrar ID pedido en header
+                if (ped) document.getElementById('txt-pedido-id').textContent = `#${ped.id}`;
+            } catch(_){}
+        }
+
+        if (!envio) {
+            // Aún no hay envío creado por admin/vendedor
+            renderEspera(wrap);
+            return;
+        }
+
+        // Detectar retiro en tienda
+        if ((envio.metodo_envio || '').toLowerCase().includes('retiro')) esTipoRetiro = true;
+
+        if (esTipoRetiro) {
+            renderRetiro(wrap, envio);
+        } else {
+            renderDelivery(wrap, envio);
+        }
+
+    } catch(err) {
+        console.error(err);
+        // Fallback: si API falla mostramos espera
+        renderEspera(document.getElementById('contenido-envio'));
+    }
+}
+
+/* ================================================================
+   RENDER: SIN ENVÍO AÚN
+================================================================ */
+function renderEspera(wrap) {
+    wrap.innerHTML = `
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <i class="bi bi-hourglass-split"></i>
+                <h2>Estado del envío</h2>
+            </div>
+            <span class="estado-badge badge-espera"><i class="bi bi-clock"></i> En espera</span>
+        </div>
+        <div class="panel-body">
+            <div class="espera-wrap">
+                <div class="espera-anim">⏳</div>
+                <div class="espera-titulo">Tu pedido está siendo procesado</div>
+                <div class="espera-desc">
+                    Nuestro equipo ya recibió tu pedido. En breve asignaremos un método de envío
+                    y podrás ver aquí el seguimiento en tiempo real.
+                </div>
+                <button class="btn-recargar" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Actualizar estado
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <i class="bi bi-info-circle"></i>
+                <h2>¿Qué pasa ahora?</h2>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                ${[
+                    ['bi-check-circle-fill','verde','Pedido recibido','Tu pedido fue registrado correctamente en nuestro sistema.'],
+                    ['bi-gear','gris-texto','Revisión en curso','Estamos verificando tu pago y preparando los repuestos.'],
+                    ['bi-truck','gris-texto','Próximamente — asignación de envío','Te notificaremos en cuanto tu pedido esté en camino.'],
+                ].map(([icon, color, titulo, desc]) => `
+                    <div style="display:flex;gap:14px;align-items:flex-start">
+                        <i class="bi ${icon}" style="color:var(--${color});font-size:1.1rem;margin-top:2px;flex-shrink:0"></i>
+                        <div>
+                            <div style="font-size:0.9rem;font-weight:700;margin-bottom:2px">${titulo}</div>
+                            <div style="font-size:0.83rem;color:var(--gris-texto)">${desc}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ================================================================
+   RENDER: RETIRO EN TIENDA
+================================================================ */
+function renderRetiro(wrap, envio) {
+    const est    = resolverEstado(envio);
+    const entregado = est.paso >= 3;
+
+    wrap.innerHTML = `
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <i class="bi bi-shop"></i>
+                <h2>Retiro en tienda</h2>
+            </div>
+            <span class="estado-badge ${est.badge}">
+                <i class="bi bi-circle-fill" style="font-size:6px"></i> ${est.badgeTxt}
+            </span>
+        </div>
+        <div class="panel-body">
+            <div class="retiro-wrap">
+                <div class="retiro-anim">${entregado ? '✅' : '🏪'}</div>
+                <div class="retiro-titulo">${entregado ? '¡Ya puedes retirar tu pedido!' : 'Tu pedido estará listo pronto'}</div>
+                <div class="retiro-desc">
+                    ${entregado
+                        ? 'Pasa por nuestra tienda con tu número de pedido para recoger tus repuestos. ¡Gracias por tu compra!'
+                        : 'Estamos preparando tus repuestos. Te avisaremos cuando estén listos para retirar en tienda.'}
+                </div>
+                <div class="retiro-steps">
+                    ${[
+                        ['1','Pedido recibido','Tu pedido fue registrado correctamente.', est.paso >= 0],
+                        ['2','Preparando repuestos','Estamos empacando tus productos.', est.paso >= 1],
+                        ['3','Listo para retirar','Pasa por tienda con tu número de pedido.', est.paso >= 3],
+                    ].map(([num, titulo, desc, hecho]) => `
+                        <div class="retiro-step">
+                            <div class="retiro-step-num" style="${hecho ? 'background:rgba(34,197,94,0.15);border-color:var(--verde);color:var(--verde)' : ''}">
+                                ${hecho ? '<i class="bi bi-check"></i>' : num}
+                            </div>
+                            <div>
+                                <div class="retiro-step-txt" style="font-weight:700;color:${hecho ? 'var(--verde)' : 'var(--blanco)'}">${titulo}</div>
+                                <div class="retiro-step-txt">${desc}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    </div>
+    ${renderInfoPanel(envio)}`;
+}
+
+/* ================================================================
+   RENDER: DELIVERY (timeline completo)
+================================================================ */
+function renderDelivery(wrap, envio) {
+    const est          = resolverEstado(envio);
+    const pasoActivo   = est.paso;
+    const tracking     = envio.codigo_seguimiento || '';
+    const empresa      = envio.empresa_envio      || '';
+    const fechaEnvio   = formatFecha(envio.fecha_envio);
+    const fechaEntrega = formatFecha(envio.fecha_entrega);
+
+    // Timeline HTML
+    const timelineHtml = PASOS_DELIVERY.map((p, i) => {
+        const done   = i < pasoActivo;
+        const active = i === pasoActivo;
+        const cls    = done ? 'done' : active ? 'active' : 'pending';
+
+        let extra = '';
+        if (i === 1 && done)   extra = `<div class="tl-fecha"><i class="bi bi-check-circle-fill"></i> Empacado</div>`;
+        if (i === 2 && done)   extra = fechaEnvio  ? `<div class="tl-fecha"><i class="bi bi-calendar"></i> Salió el ${fechaEnvio}</div>` : '';
+        if (i === 2 && active) extra = `<div class="tl-chip"><i class="bi bi-broadcast"></i> En tránsito ahora</div>`;
+        if (i === 3 && done)   extra = fechaEntrega ? `<div class="tl-fecha"><i class="bi bi-check-circle-fill"></i> Entregado el ${fechaEntrega}</div>` : '';
+
+        return `
+        <div class="tl-step ${cls}">
+            <div class="tl-icon"><i class="bi ${p.icon}"></i></div>
+            <div class="tl-content">
+                <div class="tl-titulo">${p.titulo}</div>
+                <div class="tl-desc">${p.desc}</div>
+                ${extra}
+            </div>
+        </div>`;
+    }).join('');
+
+    wrap.innerHTML = `
+    <!-- Panel estado principal -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <i class="bi bi-truck"></i>
+                <h2>Seguimiento del envío</h2>
+            </div>
+            <span class="estado-badge ${est.badge}">
+                <i class="bi bi-circle-fill" style="font-size:6px"></i> ${est.badgeTxt}
+            </span>
+        </div>
+        <div class="panel-body">
+
+            ${tracking ? `
+            <div class="tracking-box">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--gris-texto);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em">Código de seguimiento</div>
+                    <div class="tracking-code">${tracking}</div>
+                    ${empresa ? `<div style="font-size:0.8rem;color:var(--gris-texto);margin-top:3px"><i class="bi bi-building"></i> ${empresa}</div>` : ''}
+                </div>
+                <button class="btn-copy-track" onclick="copiar('${tracking}')">
+                    <i class="bi bi-copy"></i> Copiar
+                </button>
+            </div>` : ''}
+
+            <!-- Info chips -->
+            <div class="pedido-chips">
+                ${empresa ? `<span class="chip"><i class="bi bi-building"></i> ${empresa}</span>` : ''}
+                ${envio.metodo_envio ? `<span class="chip"><i class="bi bi-truck"></i> ${envio.metodo_envio}</span>` : ''}
+                ${fechaEnvio   ? `<span class="chip"><i class="bi bi-calendar-event"></i> Salida: ${fechaEnvio}</span>`   : ''}
+                ${fechaEntrega ? `<span class="chip"><i class="bi bi-calendar-check"></i> Entrega: ${fechaEntrega}</span>` : ''}
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline">
+                ${timelineHtml}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Mapa visual de progreso -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <i class="bi bi-geo-alt"></i>
+                <h2>Ruta del paquete</h2>
+            </div>
+        </div>
+        <div class="panel-body">
+            ${renderRutaVisual(pasoActivo, empresa, fechaEnvio, fechaEntrega)}
+        </div>
+    </div>
+
+    ${renderInfoPanel(envio)}`;
+}
+
+/* ================================================================
+   RUTA VISUAL — "mapita" con puntos y línea
+================================================================ */
+function renderRutaVisual(pasoActivo, empresa, fechaEnvio, fechaEntrega) {
+    const puntos = [
+        { label:'Tienda',       sub:'Racing10',          icon:'🏪', done: pasoActivo >= 1 },
+        { label:'Despacho',     sub: empresa || 'Courier', icon:'📦', done: pasoActivo >= 2 },
+        { label:'En tránsito',  sub: fechaEnvio || '—',  icon:'🚚', done: pasoActivo >= 2, active: pasoActivo === 2 },
+        { label:'Destino',      sub: fechaEntrega || 'Pronto', icon:'📍', done: pasoActivo >= 3 },
+    ];
+
+    const puntosHtml = puntos.map((p, i) => `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative">
+            <!-- conector -->
+            ${i < puntos.length - 1 ? `
+            <div style="
+                position:absolute;top:22px;left:50%;right:-50%;
+                height:3px;
+                background:${p.done ? 'var(--verde)' : 'rgba(255,255,255,0.08)'};
+                border-radius:2px;
+                transition:background 0.4s;
+                z-index:0;
+            "></div>` : ''}
+            <!-- círculo -->
+            <div style="
+                width:44px;height:44px;border-radius:50%;
+                background:${p.done ? 'rgba(34,197,94,0.15)' : p.active ? 'rgba(220,0,0,0.15)' : 'rgba(255,255,255,0.04)'};
+                border:2px solid ${p.done ? 'var(--verde)' : p.active ? 'var(--rojo)' : 'rgba(255,255,255,0.1)'};
+                display:flex;align-items:center;justify-content:center;
+                font-size:1.2rem;position:relative;z-index:1;
+                ${p.active ? 'box-shadow:0 0 16px rgba(220,0,0,0.4);animation:pulse-icon 2s ease-in-out infinite;' : ''}
+            ">${p.icon}</div>
+            <!-- etiquetas -->
+            <div style="text-align:center">
+                <div style="font-size:0.78rem;font-weight:700;color:${p.done ? 'var(--verde)' : p.active ? 'var(--blanco)' : 'var(--gris-texto)'}">${p.label}</div>
+                <div style="font-size:0.7rem;color:var(--gris-texto)">${p.sub}</div>
+            </div>
+        </div>
+    `).join('');
+
+    return `
+    <div style="display:flex;align-items:flex-start;gap:0;padding:0.5rem 0 1rem;">
+        ${puntosHtml}
+    </div>
+    ${pasoActivo < 3 ? `
+    <div style="background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.2);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--azul);display:flex;gap:8px;align-items:flex-start;margin-top:0.5rem">
+        <i class="bi bi-info-circle-fill" style="flex-shrink:0;margin-top:1px"></i>
+        <span>El mapa se actualiza conforme el administrador registre cambios en el estado de tu envío. Vuelve a consultar más tarde.</span>
+    </div>` : `
+    <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--verde);display:flex;gap:8px;align-items:center;margin-top:0.5rem">
+        <i class="bi bi-check-circle-fill" style="flex-shrink:0"></i>
+        <span>¡Tu pedido fue entregado exitosamente! Gracias por confiar en Racing10.</span>
+    </div>`}`;
+}
+
+/* ================================================================
+   PANEL DATOS DEL ENVÍO (compartido)
+================================================================ */
+function renderInfoPanel(envio) {
+    const costo = envio.costo_envio !== undefined ? `Bs. ${parseFloat(envio.costo_envio).toFixed(2)}` : '—';
+    return `
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <i class="bi bi-receipt"></i>
+                <h2>Datos del envío</h2>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="envio-hero">
+                <div class="info-card">
+                    <div class="info-label">Método</div>
+                    <div class="info-valor"><i class="bi bi-truck"></i>${envio.metodo_envio || '—'}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Empresa</div>
+                    <div class="info-valor"><i class="bi bi-building"></i>${envio.empresa_envio || 'Racing10'}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Costo de envío</div>
+                    <div class="info-valor"><i class="bi bi-tag"></i>${costo}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Pedido</div>
+                    <div class="info-valor"><i class="bi bi-hash"></i>${envio.pedido_id || '—'}</div>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:0.5rem">
+                <a href="../index.html" style="font-size:0.85rem;color:var(--gris-texto);text-decoration:underline">
+                    Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ================================================================
+   HELPERS
+================================================================ */
+function resolverEstado(envio) {
+    const porId = ESTADO_MAP[envio.estado_id];
+    if (porId) return porId;
+    const nombre = envio.estado?.nombre || '';
+    return estadoPorNombre(nombre);
+}
+
+function formatFecha(str) {
+    if (!str) return '';
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    return d.toLocaleDateString('es-BO', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function copiar(txt) {
+    navigator.clipboard.writeText(txt).then(() => toast('Copiado al portapapeles', 'verde'));
+}
+
+function toast(msg, tipo = 'rojo') {
+    const icons = { rojo:'bi-exclamation-circle', verde:'bi-check-circle', amarillo:'bi-lightning' };
+    const el = document.createElement('div');
+    el.className = `toast ${tipo}`;
+    el.innerHTML = `<i class="bi ${icons[tipo]}"></i> ${msg}`;
+    document.getElementById('toast-wrap').appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2800);
+}
+</script>
+</body>
+</html>

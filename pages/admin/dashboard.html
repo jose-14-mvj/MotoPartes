@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoRepRacing10 — Panel de Administración</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+</head>
+<body>
+    <div id="overlay-menu"></div>
+
+    <form id="wrapper-dashboard" onsubmit="return false;">
+
+        <nav class="sidebar-admin">
+            <header class="sidebar-header">
+                <figure class="brand-logo">
+                    <img src="../../assets/img/logo.png" alt="Logo MotoRepRacing10">
+                </figure>
+                <h2>Admin Panel</h2>
+            </header>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="dashboard.html" class="menu-link active">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="productos.html" class="menu-link">
+                        <i class="bi bi-box-seam"></i>
+                        <span>Repuestos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="pedidos.html" class="menu-link">
+                        <i class="bi bi-receipt"></i>
+                        <span>Pedidos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="usuarios.html" class="menu-link">
+                        <i class="bi bi-people"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="../../index.html" class="menu-link" target="_blank">
+                        <i class="bi bi-shop"></i>
+                        <span>Ver Tienda</span>
+                    </a>
+                </li>
+            </ul>
+
+            <footer class="sidebar-footer">
+                <button type="button" class="btn-logout" onclick="cerrarSesion()">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </footer>
+        </nav>
+
+        <main class="main-content">
+            
+            <header class="topbar-admin">
+                <button id="btn-menu" class="btn-menu-mobile">
+                    <i class="bi bi-list"></i>
+                </button>
+                <section class="topbar-search">
+                    <i class="bi bi-search"></i>
+                    <input type="search" placeholder="Buscar repuestos, códigos, pedidos...">
+                </section>
+                
+                <section class="topbar-profile">
+                    <span id="admin-name" class="profile-name">Cargando Administrador...</span>
+                    <figure class="profile-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </figure>
+                </section>
+            </header>
+
+            <section class="dashboard-analytics">
+                <header class="analytics-header">
+                    <h1>Vista General</h1>
+                    <p>Monitoreo en tiempo real de MotoRepRacing10</p>
+                </header>
+
+                <section class="kpi-grid">
+                    <article class="kpi-card">
+                        <i class="bi bi-box-seam icon-kpi repuestos"></i>
+                        <hgroup>
+                            <h3>Total Repuestos</h3>
+                            <p id="kpi-productos">0</p>
+                        </hgroup>
+                    </article>
+
+                    <article class="kpi-card">
+                        <i class="bi bi-currency-dollar icon-kpi ventas"></i>
+                        <hgroup>
+                            <h3>Ventas Totales</h3>
+                            <p id="kpi-ventas">Bs. 0.00</p>
+                        </hgroup>
+                    </article>
+
+                    <article class="kpi-card">
+                        <i class="bi bi-receipt icon-kpi pedidos"></i>
+                        <hgroup>
+                            <h3>Pedidos Activos</h3>
+                            <p id="kpi-pedidos">0</p>
+                        </hgroup>
+                    </article>
+
+                    <article class="kpi-card">
+                        <i class="bi bi-people icon-kpi clientes"></i>
+                        <hgroup>
+                            <h3>Usuarios</h3>
+                            <p id="kpi-usuarios">0</p>
+                        </hgroup>
+                    </article>
+                </section>
+            </section>
+
+            <section class="dashboard-recent">
+                <header class="recent-header">
+                    <h2>Últimos Repuestos Agregados</h2>
+                </header>
+
+                <table class="table-semantic-admin">
+                    <thead>
+                        <tr>
+                            <th scope="col">Imagen</th>
+                            <th scope="col">Repuesto</th>
+                            <th scope="col">Código</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-productos-recientes">
+                        <tr>
+                            <td colspan="5" class="table-loading">Cargando repuestos desde los boxes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </form>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+verificarRol(1);
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const tbody = document.getElementById('tabla-productos-recientes');
+
+    try {
+
+        const usuario = getUsuario();
+
+        if (usuario) {
+            document.getElementById('admin-name').textContent =
+                usuario.name || usuario.nombre || 'Administrador';
+        }
+
+        const [
+            respuestaProductos,
+            respuestaUsuarios,
+            respuestaPedidos
+        ] = await Promise.all([
+            getProductos(),
+            getUsuarios(),
+            getPedidos()
+        ]);
+
+        let productos = [];
+        let usuarios = [];
+        let pedidos = [];
+
+        if (
+            respuestaProductos?.status &&
+            respuestaProductos?.data?.data
+        ) {
+            productos = respuestaProductos.data.data;
+        }
+
+        if (
+            respuestaUsuarios?.status &&
+            respuestaUsuarios?.data
+        ) {
+            usuarios = Array.isArray(respuestaUsuarios.data)
+                ? respuestaUsuarios.data
+                : respuestaUsuarios.data.data || [];
+        }
+
+        if (
+            respuestaPedidos?.status &&
+            respuestaPedidos?.data
+        ) {
+            pedidos = Array.isArray(respuestaPedidos.data)
+                ? respuestaPedidos.data
+                : respuestaPedidos.data.data || [];
+        }
+
+        document.getElementById('kpi-productos').textContent =
+            productos.length;
+
+        document.getElementById('kpi-usuarios').textContent =
+            usuarios.length;
+
+        document.getElementById('kpi-pedidos').textContent =
+            pedidos.length;
+
+        let totalVentas = 0;
+
+        pedidos.forEach(pedido => {
+
+            if (pedido.total) {
+                totalVentas += Number(pedido.total);
+            }
+            else if (pedido.monto_total) {
+                totalVentas += Number(pedido.monto_total);
+            }
+            else if (pedido.subtotal) {
+                totalVentas += Number(pedido.subtotal);
+            }
+
+        });
+
+        document.getElementById('kpi-ventas').textContent =
+            'Bs. ' + totalVentas.toFixed(2);
+
+        tbody.innerHTML = '';
+
+        if (productos.length === 0) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        No existen productos registrados.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        productos.slice(0, 5).forEach(prod => {
+
+            const nombre =
+                prod.nombre || 'Sin nombre';
+
+            const codigo =
+                prod.codigo || 'N/A';
+
+            const precio =
+                parseFloat(
+                    prod.precio_venta || 0
+                ).toFixed(2);
+
+            const stock = prod.stock
+                ? parseInt(prod.stock.cantidad_actual || 0)
+                : 0;
+
+            let imagen =
+                '../../assets/img/logo.png';
+
+            if (
+                prod.imagenes &&
+                prod.imagenes.length > 0
+            ) {
+                imagen =
+                    'http://localhost:8000/' +
+                    prod.imagenes[0].imagen;
+            }
+
+            const fila =
+                document.createElement('tr');
+
+            fila.innerHTML = `
+                <td>
+                    <img
+                        src="${imagen}"
+                        width="60"
+                        height="60"
+                        style="
+                            object-fit:cover;
+                            border-radius:8px;
+                        "
+                    >
+                </td>
+
+                <td>
+                    <strong>${nombre}</strong>
+                </td>
+
+                <td>
+                    <code>${codigo}</code>
+                </td>
+
+                <td>
+                    Bs. ${precio}
+                </td>
+
+                <td>
+                    <span class="badge ${
+                        stock > 5
+                            ? 'bg-success'
+                            : 'bg-danger'
+                    }">
+                        ${stock}
+                    </span>
+                </td>
+            `;
+
+            tbody.appendChild(fila);
+
+        });
+
+    }
+    catch(error) {
+
+        console.error(error);
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    Error cargando dashboard
+                </td>
+            </tr>
+        `;
+    }
+});
+
+</script>
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const btnMenu =
+        document.getElementById('btn-menu');
+
+    const sidebar =
+        document.querySelector('.sidebar-admin');
+
+    const overlay =
+        document.getElementById('overlay-menu');
+
+    if(btnMenu){
+
+        btnMenu.addEventListener('click', () => {
+
+            sidebar.classList.add('show');
+            overlay.classList.add('show');
+
+        });
+
+    }
+
+    if(overlay){
+
+        overlay.addEventListener('click', () => {
+
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+
+        });
+
+    }
+
+    window.addEventListener('resize', () => {
+
+        if(window.innerWidth > 768){
+
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+
+        }
+
+    });
+
+});
+
+</script>
+</body>
+</html>

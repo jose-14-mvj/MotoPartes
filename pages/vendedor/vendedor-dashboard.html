@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | Vendedor — MotoRepRacing10</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root {
+  --rojo:       #DC0000;
+  --rojo-vivo:  #FF2424;
+  --negro:      #080808;
+  --panel:      #111111;
+  --card:       #161616;
+  --borde:      rgba(255,255,255,0.07);
+  --texto:      #F0F0F0;
+  --muted:      #777;
+  --verde:      #22C55E;
+  --amarillo:   #F59E0B;
+  --azul:       #3B82F6;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--negro);color:var(--texto);min-height:100vh;}
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,8,8,0.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(220,0,0,0.3);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;height:64px;
+}
+.nav-brand{font-weight:900;font-size:1.1rem;letter-spacing:-0.02em;color:#fff;}
+.nav-brand span{color:var(--rojo-vivo);}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{
+  padding:6px 14px;border-radius:6px;font-size:0.875rem;font-weight:500;
+  color:var(--muted);text-decoration:none;transition:all .2s;
+}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.nav-links a.activo{color:var(--rojo-vivo);background:rgba(220,0,0,0.1);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-usuario{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);border:var(--borde) solid 1px;
+  border-radius:8px;padding:6px 12px;font-size:0.82rem;color:var(--muted);
+}
+.nav-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--rojo),#800);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;
+}
+.btn-salir{
+  background:rgba(220,0,0,0.08);border:1px solid rgba(220,0,0,0.3);
+  color:#f87171;border-radius:7px;padding:6px 14px;
+  font-size:0.82rem;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-salir:hover{background:rgba(220,0,0,0.18);color:#fff;}
+
+/* LAYOUT */
+.contenedor{max-width:1280px;margin:0 auto;padding:2.5rem 2rem;}
+.page-header{margin-bottom:2rem;}
+.page-header h1{font-size:1.6rem;font-weight:800;letter-spacing:-0.02em;}
+.page-header p{color:var(--muted);font-size:0.9rem;margin-top:4px;}
+
+/* MÉTRICAS */
+.metricas{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.metrica{
+  background:var(--card);border:1px solid var(--borde);
+  border-radius:12px;padding:1.25rem 1.5rem;
+  border-left:3px solid var(--borde);
+  transition:transform .2s;
+}
+.metrica:hover{transform:translateY(-2px);}
+.metrica.amarillo{border-left-color:var(--amarillo);}
+.metrica.azul{border-left-color:var(--azul);}
+.metrica.verde{border-left-color:var(--verde);}
+.metrica.rojo{border-left-color:var(--rojo-vivo);}
+.metrica-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
+.metrica-num{font-size:2.4rem;font-weight:900;line-height:1;letter-spacing:-0.03em;}
+.metrica.amarillo .metrica-num{color:var(--amarillo);}
+.metrica.azul .metrica-num{color:var(--azul);}
+.metrica.verde .metrica-num{color:var(--verde);}
+.metrica.rojo .metrica-num{color:var(--rojo-vivo);}
+.metrica-sub{font-size:0.75rem;color:var(--muted);margin-top:4px;}
+
+/* GRILLA DOS COLUMNAS */
+.grid-2{display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start;}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--borde);border-radius:14px;overflow:hidden;}
+.panel-header{
+  padding:1.25rem 1.5rem;border-bottom:1px solid var(--borde);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.panel-body{padding:1.25rem 1.5rem;}
+
+/* TABLA */
+table{width:100%;border-collapse:collapse;}
+thead th{
+  font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);padding:0 1.5rem 10px;text-align:left;
+}
+tbody tr{border-top:1px solid var(--borde);transition:background .15s;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+tbody td{padding:12px 1.5rem;font-size:0.875rem;}
+.td-id{color:var(--rojo-vivo);font-weight:700;font-family:monospace;}
+.td-cliente{font-weight:600;}
+.td-total{font-weight:700;color:#fff;}
+.td-fecha{color:var(--muted);font-size:0.8rem;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:0.72rem;font-weight:700;letter-spacing:.04em;}
+.badge-pendiente{background:rgba(245,158,11,.15);color:#fbbf24;}
+.badge-confirmado{background:rgba(59,130,246,.15);color:#60a5fa;}
+.badge-proceso{background:rgba(139,92,246,.15);color:#a78bfa;}
+.badge-enviado{background:rgba(6,182,212,.15);color:#22d3ee;}
+.badge-entregado{background:rgba(34,197,94,.15);color:#4ade80;}
+.badge-cancelado{background:rgba(220,0,0,.15);color:#f87171;}
+
+/* ACCIONES RÁPIDAS */
+.acciones-lista{display:flex;flex-direction:column;gap:8px;}
+.accion-btn{
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);border:1px solid var(--borde);
+  border-radius:10px;padding:14px 16px;cursor:pointer;
+  transition:all .2s;text-decoration:none;color:var(--texto);
+  font-size:0.875rem;font-weight:600;
+}
+.accion-btn:hover{border-color:rgba(220,0,0,0.4);background:rgba(220,0,0,0.05);color:#fff;}
+.accion-icon{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;flex-shrink:0;
+}
+.accion-icon.rojo{background:rgba(220,0,0,.15);color:var(--rojo-vivo);}
+.accion-icon.verde{background:rgba(34,197,94,.15);color:var(--verde);}
+.accion-icon.azul{background:rgba(59,130,246,.15);color:var(--azul);}
+.accion-icon.amarillo{background:rgba(245,158,11,.15);color:var(--amarillo);}
+.accion-info{flex:1;}
+.accion-desc{font-size:0.75rem;color:var(--muted);font-weight:400;margin-top:1px;}
+
+/* STOCK ALERTAS */
+.stock-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--borde);
+}
+.stock-item:last-child{border-bottom:none;}
+.stock-nombre{font-size:0.85rem;font-weight:600;}
+.stock-cant{font-size:0.8rem;color:#f87171;font-weight:700;}
+
+/* SPINNER */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(220,0,0,.2);border-top-color:var(--rojo-vivo);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.cargando{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:0.85rem;padding:1.5rem 0;}
+
+/* TOAST */
+.toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:#1a1a1a;border:1px solid var(--borde);border-radius:10px;
+  padding:12px 18px;font-size:0.85rem;font-weight:600;
+  display:flex;align-items:center;gap:10px;min-width:260px;
+  box-shadow:0 8px 24px rgba(0,0,0,.6);
+  transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.toast.show{transform:translateX(0);}
+.toast.verde{border-left:3px solid var(--verde);}
+.toast.rojo{border-left:3px solid var(--rojo-vivo);}
+.toast.amarillo{border-left:3px solid var(--amarillo);}
+
+/* LINK */
+.link-ver{font-size:0.8rem;color:var(--rojo-vivo);text-decoration:none;font-weight:600;}
+.link-ver:hover{text-decoration:underline;}
+
+@media(max-width:900px){
+  .metricas{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+}
+@media(max-width:500px){
+  .metricas{grid-template-columns:1fr;}
+  .contenedor{padding:1.5rem 1rem;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand"><span>RACING</span>10 · Vendedor</span>
+  <div class="nav-links">
+    <a href="vendedor-dashboard.html" class="activo">Dashboard</a>
+    <a href="vendedor-productos.html">Productos</a>
+    <a href="vendedor-pedidos.html">Pedidos</a>
+    <a href="vendedor-envios.html">Envíos</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-usuario">
+      <div class="nav-avatar" id="avatar-inicial">V</div>
+      <span id="nav-nombre">Vendedor</span>
+    </div>
+    <button class="btn-salir" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Salir</button>
+  </div>
+</nav>
+
+<div class="contenedor">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Resumen operativo — <span id="fecha-hoy"></span></p>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metricas">
+    <div class="metrica amarillo">
+      <div class="metrica-label">Pendientes</div>
+      <div class="metrica-num" id="m-pendientes">—</div>
+      <div class="metrica-sub">Esperando confirmación</div>
+    </div>
+    <div class="metrica azul">
+      <div class="metrica-label">En proceso</div>
+      <div class="metrica-num" id="m-proceso">—</div>
+      <div class="metrica-sub">Confirmados y preparando</div>
+    </div>
+    <div class="metrica verde">
+      <div class="metrica-label">Entregados</div>
+      <div class="metrica-num" id="m-entregados">—</div>
+      <div class="metrica-sub">Completados hoy/total</div>
+    </div>
+    <div class="metrica rojo">
+      <div class="metrica-label">Total pedidos</div>
+      <div class="metrica-num" id="m-total">—</div>
+      <div class="metrica-sub">En el sistema</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- PEDIDOS RECIENTES -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Pedidos recientes</span>
+        <a href="vendedor-pedidos.html" class="link-ver">Ver todos →</a>
+      </div>
+      <div id="tabla-wrap">
+        <div class="cargando" style="padding:1.5rem;">
+          <div class="spinner"></div> Cargando pedidos...
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+      <!-- ACCIONES RÁPIDAS -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Acciones rápidas</span>
+        </div>
+        <div class="panel-body">
+          <div class="acciones-lista">
+            <a href="vendedor-pedidos.html?venta=1" class="accion-btn">
+              <div class="accion-icon rojo"><i class="bi bi-cart-plus-fill"></i></div>
+              <div class="accion-info">
+                <div>Nueva venta presencial</div>
+                <div class="accion-desc">Cliente en tienda, sin login</div>
+              </div>
+              <i class="bi bi-chevron-right" style="color:var(--muted);font-size:.8rem;"></i>
+            </a>
+            <a href="vendedor-pedidos.html" class="accion-btn">
+              <div class="accion-icon azul"><i class="bi bi-list-check"></i></div>
+              <div class="accion-info">
+                <div>Gestionar pedidos</div>
+                <div class="accion-desc">Cambiar estados y pagos</div>
+              </div>
+              <i class="bi bi-chevron-right" style="color:var(--muted);font-size:.8rem;"></i>
+            </a>
+            <a href="vendedor-envios.html" class="accion-btn">
+              <div class="accion-icon verde"><i class="bi bi-truck"></i></div>
+              <div class="accion-info">
+                <div>Registrar envío</div>
+                <div class="accion-desc">Crear tracking y despacho</div>
+              </div>
+              <i class="bi bi-chevron-right" style="color:var(--muted);font-size:.8rem;"></i>
+            </a>
+            <a href="vendedor-productos.html" class="accion-btn">
+              <div class="accion-icon amarillo"><i class="bi bi-box-seam"></i></div>
+              <div class="accion-info">
+                <div>Catálogo</div>
+                <div class="accion-desc">Ver stock y precios</div>
+              </div>
+              <i class="bi bi-chevron-right" style="color:var(--muted);font-size:.8rem;"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOCK BAJO -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">⚠ Stock bajo</span>
+        </div>
+        <div class="panel-body" id="stock-bajo-wrap">
+          <div class="cargando"><div class="spinner"></div> Verificando...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script>
+const API = 'http://localhost:8000/api';
+
+const ESTADOS = {
+  9:'Pendiente',10:'Confirmado',11:'En proceso',
+  12:'Enviado',13:'Entregado',14:'Cancelado'
+};
+const BADGE_CLS = {
+  9:'badge-pendiente',10:'badge-confirmado',11:'badge-proceso',
+  12:'badge-enviado',13:'badge-entregado',14:'badge-cancelado'
+};
+
+function toast(msg, tipo='verde'){
+  const t = document.createElement('div');
+  t.className = `toast ${tipo}`;
+  t.innerHTML = `<i class="bi bi-${tipo==='verde'?'check-circle':'exclamation-circle'}" style="color:var(--${tipo==='verde'?'verde':tipo==='amarillo'?'amarillo':'rojo-vivo'})"></i> ${msg}`;
+  document.getElementById('toasts').appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3000);
+}
+
+function fmtFecha(f){
+  if(!f) return '—';
+  const d=f.split(' ')[0].split('-');
+  return d.length===3?`${d[2]}/${d[1]}/${d[0]}`:f.substring(0,10);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  verificarRol(3);
+  const u = obtenerUsuario();
+  if(u){
+    const nombre = u.name||u.nombre||'Vendedor';
+    document.getElementById('nav-nombre').textContent = nombre.split(' ')[0];
+    document.getElementById('avatar-inicial').textContent = nombre.charAt(0).toUpperCase();
+  }
+  document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-BO',{weekday:'long',day:'numeric',month:'long'});
+  cargarDashboard();
+});
+
+async function cargarDashboard(){
+  try{
+    const r = await fetch(`${API}/pedidos`,{
+      headers:{'Authorization':'Bearer '+obtenerToken(),'Accept':'application/json'}
+    });
+    if(r.status===401){cerrarSesion();return;}
+    const datos = await r.json();
+    const lista = Array.isArray(datos.data)?datos.data:(datos.data?.data??[]);
+
+    document.getElementById('m-total').textContent      = lista.length;
+    document.getElementById('m-pendientes').textContent = lista.filter(p=>p.estado_id==9).length;
+    document.getElementById('m-proceso').textContent    = lista.filter(p=>p.estado_id==10||p.estado_id==11).length;
+    document.getElementById('m-entregados').textContent = lista.filter(p=>p.estado_id==13).length;
+
+    const recientes = lista.slice(0,8);
+    const wrap = document.getElementById('tabla-wrap');
+
+    if(!recientes.length){
+      wrap.innerHTML='<div class="cargando" style="padding:1.5rem;">Sin pedidos registrados aún.</div>';
+      return;
+    }
+
+    wrap.innerHTML=`<table>
+      <thead><tr>
+        <th>Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th>
+      </tr></thead>
+      <tbody>
+        ${recientes.map(p=>{
+          const u=p.usuario||p.user;
+          const cliente=u?`${u.name} ${u.apellido_paterno??''}`:`#${p.user_id}`;
+          return `<tr>
+            <td class="td-id">#${p.id}</td>
+            <td class="td-cliente">${cliente}</td>
+            <td class="td-total">Bs.${parseFloat(p.total||0).toFixed(2)}</td>
+            <td><span class="badge ${BADGE_CLS[p.estado_id]||'badge-pendiente'}">${ESTADOS[p.estado_id]||'—'}</span></td>
+            <td class="td-fecha">${fmtFecha(p.fecha_pedido||p.created_at)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+
+    // Stock bajo
+    const rProd = await fetch(`${API}/productos?page=1`,{
+      headers:{'Authorization':'Bearer '+obtenerToken(),'Accept':'application/json'}
+    });
+    const dProd = await rProd.json();
+    const prods = dProd.data?.data??[];
+    const bajos = prods.filter(p=>(p.stock?.cantidad_actual??0)<=5);
+    const sbWrap = document.getElementById('stock-bajo-wrap');
+
+    if(!bajos.length){
+      sbWrap.innerHTML='<p style="color:var(--verde);font-size:.85rem;"><i class="bi bi-check-circle-fill"></i> Stock en niveles normales</p>';
+    } else {
+      sbWrap.innerHTML=bajos.slice(0,5).map(p=>`
+        <div class="stock-item">
+          <span class="stock-nombre">${p.nombre}</span>
+          <span class="stock-cant">${p.stock?.cantidad_actual??0} uds</span>
+        </div>`).join('');
+    }
+
+  }catch(e){
+    console.error(e);
+    toast('Error al conectar con el servidor','rojo');
+  }
+}
+</script>
+</body>
+</html>

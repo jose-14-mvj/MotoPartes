@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - MotoRepRacing10</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('assets/img/fondo.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .registro-card {
+            background: rgba(0, 0, 0, 0.85); /* Fondo negro tipo Honda */
+            padding: 40px;
+            border-radius: 0; /* Estilo más recto y técnico */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            color: white;
+            border-top: 5px solid #CC0000; /* Detalle Rojo Honda */
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo-container img {
+            width: 280px; /* Ajusta el tamaño de tu logo */
+        }
+
+        h2 { text-align: center; margin-bottom: 25px; font-weight: 700; text-transform: uppercase; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #CC0000; /* Rojo Honda */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover { background-color: #990000; }
+
+        a { color: #CC0000; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="registro-card">
+    <div class="logo-container">
+        <!-- Tu logo aquí -->
+        <img src="assets/img/logo.png" alt="Logo">
+    </div>
+    <h2>Crear Cuenta</h2>
+    <form id="registro-form">
+        <input type="text" id="name" placeholder="Nombre" required>
+        <input type="text" id="apellido_paterno" placeholder="Apellido Paterno" required>
+        <input type="text" id="apellido_materno" placeholder="Apellido Materno">
+        <input type="text" id="ci" placeholder="Cédula de Identidad" required>
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button type="submit">Registrarse</button>
+    </form>
+    <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+        ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </p>
+</div>
+
+<script src="assets/js/auth.js"></script>
+</body>
+</html>

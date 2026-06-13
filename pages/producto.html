@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Producto - MotoRepRacing10</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-image: url('../assets/img/fondo.png');
+            background-size: cover; background-position: center;
+            background-attachment: fixed; color: white;
+        }
+
+        .container {
+            max-width: 800px; margin: 50px auto;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px; border-top: 5px solid #CC0000;
+            border-radius: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .logo { width: 300px; display: block; margin: 0 auto 20px;  }
+        .producto-img { width: 100%; max-height: 400px; object-fit: cover; margin-bottom: 20px; border-radius: 5px; }
+        h1 { color: #CC0000; text-transform: uppercase; }
+        .precio { font-size: 24px; font-weight: bold; color: #fff; }
+        .btn-volver { 
+            display: inline-block; padding: 12px 25px; background: #CC0000; 
+            color: white; text-decoration: none; border: none; cursor: pointer;
+            margin-top: 20px; text-transform: uppercase; font-weight: bold;
+        }
+        .btn-volver:hover { background: #990000; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="detalle-container">
+    <img src="../assets/img/logo.png" class="logo" alt="Logo">
+    <h1>Cargando detalles...</h1>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    async function cargarDetalle() {
+        try {
+            const response = await fetch(`http://localhost:8000/api/productos/${id}`);
+            const result = await response.json();
+            const p = result.data;
+
+            const container = document.getElementById('detalle-container');
+            container.innerHTML = `
+                <img src="../assets/img/logo.png" class="logo" alt="Logo">
+                <h1>${p.nombre}</h1>
+                ${p.imagenes && p.imagenes.length > 0 ? `<img src="http://localhost:8000/${p.imagenes[0].imagen}" class="producto-img">` : ''}
+                <p><strong>Código:</strong> ${p.codigo}</p>
+                <p><strong>Descripción:</strong> ${p.descripcion || 'Sin descripción'}</p>
+                <div class="precio">Bs. ${parseFloat(p.precio_venta).toFixed(2)}</div>
+                <a href="../index.html" class="btn-volver">Volver al catálogo</a>
+            `;
+        } catch (error) {
+            document.getElementById('detalle-container').innerHTML = "<h1>Error al cargar</h1><p>No se pudo conectar con el servidor.</p>";
+        }
+    }
+    cargarDetalle();
+</script>
+</body>
+</html>

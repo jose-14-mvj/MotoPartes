@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - MotoRepRacing10</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --fondo-oscuro: #0a0a0a;
+            --tarjeta-oscuro: rgba(18, 18, 18, 0.85); /* Translúcido para el fondo */
+            --rojo-honda: #ff3333;
+            --blanco: #ffffff;
+            --gris-texto: #a0a0a0;
+        }
+
+        body {
+            /* CORRECCIÓN DE FONDO: Imagen fluida y centrada cubriendo el 100% */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.75)), url('./assets/img/fondo.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--blanco);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .contenedor-login {
+            background: var(--tarjeta-oscuro);
+            backdrop-filter: blur(12px); /* Efecto cristal esmerilado moderno */
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 51, 51, 0.15); /* Sutil toque rojo en el borde */
+            padding: 2.5rem;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 430px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 51, 51, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h2 {
+            font-weight: 800;
+            font-size: 1.6rem;
+            margin-top: 15px;
+            letter-spacing: 1.5px;
+            color: var(--blanco);
+            text-transform: uppercase;
+        }
+
+        .form-label {
+            color: var(--blanco);
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-grupo-oscuro {
+            background: rgba(26, 26, 26, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: var(--blanco) !important;
+            border-radius: 10px !important;
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease !important;
+        }
+
+        .input-grupo-oscuro:focus {
+            border-color: var(--rojo-honda) !important;
+            box-shadow: 0 0 0 0.25rem rgba(255, 51, 51, 0.3) !important;
+            background: #1a1a1a !important;
+        }
+
+        /* Marcador de posición (Placeholder) en gris sutil */
+        .input-grupo-oscuro::placeholder {
+            color: #555555;
+        }
+
+        .btn-honda {
+            background-color: var(--rojo-honda);
+            border: none;
+            color: var(--blanco);
+            padding: 0.85rem;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 10px;
+            width: 100%;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+        }
+
+        .btn-honda:hover {
+            background-color: #e61f1f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 51, 51, 0.45);
+        }
+
+        .btn-honda:active {
+            transform: translateY(0);
+        }
+
+        .alerta-error {
+            background-color: rgba(255, 51, 51, 0.15);
+            border: 1px solid var(--rojo-honda);
+            color: #ff9999;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .d-none {
+            display: none !important;
+        }
+
+        /* ENLACES Y NAVEGACIÓN ADICIONAL */
+        .login-footer-links {
+            text-align: center;
+            margin-top: 1.8rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.9rem;
+        }
+
+        .link-mutado {
+            color: var(--gris-texto);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .link-mutado:hover {
+            color: var(--blanco);
+        }
+
+        .link-rojo {
+            color: var(--rojo-honda);
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.2s ease;
+        }
+
+        .link-rojo:hover {
+            color: #ff6666;
+            text-decoration: underline;
+        }
+
+        .btn-volver-tienda {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-volver-tienda:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <main class="contenedor-login">
+        <header class="login-header">
+            <img src="assets/img/logo.png" alt="Logo MotoRepRacing10" style="max-width: 190px; height: auto; margin-bottom: 5px;">
+            <h2>INICIAR SESIÓN</h2>
+        </header>
+
+        <section id="error-mensaje" class="alerta-error d-none">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.1rem; color: var(--rojo-honda);"></i>
+            <span>Credenciales incorrectas. Intenta de nuevo.</span>
+        </section>
+
+        <form id="form-login">
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" id="email" class="form-control input-grupo-oscuro" placeholder="nombre@correo.com" required autocomplete="email">
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" id="password" class="form-control input-grupo-oscuro" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" id="btn-login" class="btn-honda">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Ingresar al Sistema
+            </button>
+        </form>
+
+        <footer class="login-footer-links">
+            <p class="mb-2">
+                <span style="color: var(--gris-texto);">¿No tienes una cuenta?</span> 
+                <a href="registro.html" class="link-rojo ms-1">Regístrate aquí</a>
+            </p>
+            
+            <a href="index.html" class="link-mutado btn-volver-tienda">
+                <i class="bi bi-arrow-left"></i> Volver a la Tienda
+            </a>
+        </footer>
+    </main>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Validación inicial: Si ya cuenta con token válido lo despacha al dashboard de su rol
+            redirigirSiYaEstaLogueado();
+            
+            // Suscripción al submit del formulario
+            const form = document.getElementById('form-login');
+            if (form) {
+                form.addEventListener('submit', manejarLogin);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Envíos | Vendedor — MotoRepRacing10</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root{--rojo:#DC0000;--rojo-vivo:#FF2424;--negro:#080808;--panel:#111111;--card:#161616;--card2:#1c1c1c;--borde:rgba(255,255,255,0.07);--texto:#F0F0F0;--muted:#777;--verde:#22C55E;--amarillo:#F59E0B;--azul:#3B82F6;--cian:#06B6D4;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--negro);color:var(--texto);min-height:100vh;}
+.nav{position:sticky;top:0;z-index:100;background:rgba(8,8,8,.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(220,0,0,.3);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;}
+.nav-brand{font-weight:900;font-size:1.1rem;letter-spacing:-.02em;color:#fff;}
+.nav-brand span{color:var(--rojo-vivo);}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{padding:6px 14px;border-radius:6px;font-size:.875rem;font-weight:500;color:var(--muted);text-decoration:none;transition:all .2s;}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.05);}
+.nav-links a.activo{color:var(--rojo-vivo);background:rgba(220,0,0,.1);}
+.btn-salir{background:rgba(220,0,0,.08);border:1px solid rgba(220,0,0,.3);color:#f87171;border-radius:7px;padding:6px 14px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-salir:hover{background:rgba(220,0,0,.18);color:#fff;}
+.contenedor{max-width:1280px;margin:0 auto;padding:2rem;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.page-header h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;}
+.page-header p{color:var(--muted);font-size:.875rem;margin-top:2px;}
+.btn-primary{background:linear-gradient(135deg,var(--rojo),#a00);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:.875rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-primary:hover{filter:brightness(1.15);transform:translateY(-1px);}
+.btn-secondary{background:rgba(255,255,255,.05);border:1px solid var(--borde);color:var(--texto);border-radius:9px;padding:10px 20px;font-size:.875rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+.btn-secondary:hover{background:rgba(255,255,255,.08);}
+.btn-sm{padding:6px 14px;font-size:.8rem;}
+.filtros-row{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.input-buscar{background:var(--card);border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:8px 14px;font-size:.85rem;flex:1;min-width:200px;}
+.input-buscar:focus{outline:none;border-color:rgba(220,0,0,.5);}
+.input-buscar::placeholder{color:var(--muted);}
+.filtro-select{background:var(--card);border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer;}
+.filtro-select:focus{outline:none;border-color:rgba(220,0,0,.5);}
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--borde);border-radius:14px;overflow:hidden;margin-bottom:1.5rem;}
+.panel-header{padding:1.1rem 1.5rem;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+/* TABLA */
+.tabla-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 1.25rem 10px;text-align:left;white-space:nowrap;}
+tbody tr{border-top:1px solid var(--borde);transition:background .15s;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+tbody td{padding:11px 1.25rem;font-size:.85rem;vertical-align:middle;}
+.td-id{color:var(--rojo-vivo);font-weight:700;font-family:monospace;}
+.td-muted{color:var(--muted);font-size:.78rem;}
+.tracking-code{font-family:monospace;font-size:.82rem;background:var(--card2);border-radius:5px;padding:3px 8px;color:var(--cian);}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;}
+.badge-pendiente{background:rgba(245,158,11,.15);color:#fbbf24;}
+.badge-transito{background:rgba(6,182,212,.15);color:#22d3ee;}
+.badge-entregado{background:rgba(34,197,94,.15);color:#4ade80;}
+.badge-retiro{background:rgba(139,92,246,.15);color:#a78bfa;}
+/* DRAWER */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
+.overlay.visible{opacity:1;pointer-events:all;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:520px;max-width:95vw;background:#101010;border-left:1px solid var(--borde);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.drawer.visible{transform:translateX(0);}
+.drawer-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.drawer-header h2{font-size:1rem;font-weight:700;}
+.drawer-body{flex:1;overflow-y:auto;padding:1.5rem;}
+.drawer-footer{padding:1.25rem 1.5rem;border-top:1px solid var(--borde);display:flex;gap:10px;flex-shrink:0;}
+.btn-icon{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:5px;transition:all .2s;font-size:.9rem;}
+.btn-icon:hover{color:#fff;}
+/* FORM */
+.form-group{margin-bottom:1.1rem;}
+.form-label{display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;}
+.form-input,.form-select-dark{width:100%;background:var(--card2);border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:10px 14px;font-size:.875rem;transition:border-color .2s;font-family:inherit;}
+.form-input:focus,.form-select-dark:focus{outline:none;border-color:rgba(220,0,0,.5);}
+.form-input::placeholder{color:var(--muted);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sep{height:1px;background:var(--borde);margin:.75rem 0;}
+.seccion-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
+/* DETALLE */
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--borde);font-size:.85rem;}
+.info-row:last-child{border-bottom:none;}
+.info-label{color:var(--muted);}
+.info-val{font-weight:600;}
+/* TIMELINE */
+.timeline{display:flex;justify-content:space-between;margin:1rem 0;position:relative;}
+.timeline::before{content:'';position:absolute;top:10px;left:10%;right:10%;height:2px;background:var(--borde);z-index:0;}
+.t-step{flex:1;text-align:center;position:relative;z-index:1;}
+.t-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--borde);background:var(--card2);margin:0 auto 6px;transition:all .3s;position:relative;z-index:1;}
+.t-step.done .t-dot{background:var(--verde);border-color:var(--verde);}
+.t-step.done .t-dot::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;}
+.t-step.active .t-dot{background:var(--rojo);border-color:var(--rojo);box-shadow:0 0 10px rgba(220,0,0,.4);}
+.t-lbl{font-size:.68rem;color:var(--muted);line-height:1.2;}
+.t-step.done .t-lbl,.t-step.active .t-lbl{color:#fff;}
+/* MISC */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(220,0,0,.2);border-top-color:var(--rojo-vivo);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.cargando{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem;padding:2rem 1.5rem;}
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);}
+.empty i{font-size:2rem;display:block;margin-bottom:8px;}
+.toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#1a1a1a;border:1px solid var(--borde);border-radius:10px;padding:12px 18px;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:10px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.6);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.toast.show{transform:translateX(0);}
+.toast.verde{border-left:3px solid var(--verde);}
+.toast.rojo{border-left:3px solid var(--rojo-vivo);}
+.toast.amarillo{border-left:3px solid var(--amarillo);}
+@media(max-width:600px){.contenedor{padding:1rem;}.form-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand"><span>RACING</span>10 · Vendedor</span>
+  <div class="nav-links">
+    <a href="vendedor-dashboard.html">Dashboard</a>
+    <a href="vendedor-productos.html">Productos</a>
+    <a href="vendedor-pedidos.html">Pedidos</a>
+    <a href="vendedor-envios.html" class="activo">Envíos</a>
+  </div>
+  <button class="btn-salir" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Salir</button>
+</nav>
+
+<div class="contenedor">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de Envíos</h1>
+      <p>Registra despachos, actualiza tracking y controla el estado de entrega</p>
+    </div>
+    <button class="btn-primary" onclick="abrirNuevoEnvio()">
+      <i class="bi bi-truck"></i> Registrar envío
+    </button>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros-row">
+    <input type="text" class="input-buscar" id="filtro-buscar" placeholder="Buscar por pedido o código de tracking..." oninput="filtrarLocal()">
+    <select class="filtro-select" id="filtro-metodo" onchange="filtrarLocal()">
+      <option value="">Todos los métodos</option>
+      <option value="delivery">Delivery</option>
+      <option value="retiro">Retiro en tienda</option>
+      <option value="encomienda">Encomienda</option>
+    </select>
+    <button class="btn-secondary btn-sm" onclick="cargarEnvios()"><i class="bi bi-arrow-clockwise"></i> Recargar</button>
+  </div>
+
+  <!-- TABLA -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Envíos registrados</span>
+      <span id="info-total" style="font-size:.8rem;color:var(--muted);">0 envíos</span>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Cliente</th>
+            <th>Método</th>
+            <th>Empresa</th>
+            <th>Tracking</th>
+            <th>Estado</th>
+            <th>Fecha envío</th>
+            <th style="text-align:center;">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body">
+          <tr><td colspan="8"><div class="cargando"><div class="spinner"></div> Cargando envíos...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PEDIDOS SIN ENVÍO -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">⚡ Pedidos listos para despachar</span>
+      <span id="sin-envio-count" style="font-size:.8rem;color:var(--amarillo);">—</span>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th style="text-align:center;">Crear envío</th></tr>
+        </thead>
+        <tbody id="tabla-sin-envio">
+          <tr><td colspan="5"><div class="cargando"><div class="spinner"></div> Verificando...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER: NUEVO ENVÍO -->
+<div class="overlay" id="overlay-nuevo" onclick="cerrarNuevo()"></div>
+<div class="drawer" id="drawer-nuevo">
+  <div class="drawer-header">
+    <h2><i class="bi bi-truck" style="color:var(--verde);margin-right:8px;"></i> Registrar envío</h2>
+    <button class="btn-icon" onclick="cerrarNuevo()"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div class="drawer-body">
+    <div class="form-group">
+      <label class="form-label">Pedido *</label>
+      <select class="form-select-dark" id="env-pedido-id">
+        <option value="">Seleccionar pedido...</option>
+      </select>
+    </div>
+
+    <div class="sep"></div>
+    <div class="seccion-label"><i class="bi bi-truck"></i> Datos del envío</div>
+
+    <div class="form-group">
+      <label class="form-label">Método de envío *</label>
+      <select class="form-select-dark" id="env-metodo">
+        <option value="Delivery local">Delivery local</option>
+        <option value="Encomienda">Encomienda</option>
+        <option value="Retiro en tienda">Retiro en tienda</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Empresa de envío</label>
+        <input type="text" class="form-input" id="env-empresa" placeholder="Ej: Trans Copacabana">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Costo de envío (Bs.)</label>
+        <input type="number" class="form-input" id="env-costo" value="20" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Código de tracking</label>
+      <input type="text" class="form-input" id="env-tracking" placeholder="Ej: ENV-2026-001">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Fecha de envío</label>
+        <input type="date" class="form-input" id="env-fecha-envio">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha estimada entrega</label>
+        <input type="date" class="form-input" id="env-fecha-entrega">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Estado del envío</label>
+      <select class="form-select-dark" id="env-estado">
+        <option value="36">Pendiente de despacho</option>
+        <option value="37">En tránsito</option>
+        <option value="38">Entregado</option>
+      </select>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn-secondary" style="flex:1;" onclick="cerrarNuevo()">Cancelar</button>
+    <button class="btn-primary" style="flex:1;" id="btn-crear-envio" onclick="crearEnvio()">
+      <i class="bi bi-truck"></i> Registrar envío
+    </button>
+  </div>
+</div>
+
+<!-- DRAWER: ACTUALIZAR ENVÍO -->
+<div class="overlay" id="overlay-editar" onclick="cerrarEditar()"></div>
+<div class="drawer" id="drawer-editar">
+  <div class="drawer-header">
+    <h2 id="editar-titulo">Actualizar envío</h2>
+    <button class="btn-icon" onclick="cerrarEditar()"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div class="drawer-body" id="drawer-editar-body"></div>
+  <div class="drawer-footer">
+    <button class="btn-secondary" style="flex:1;" onclick="cerrarEditar()">Cerrar</button>
+    <button class="btn-primary" style="flex:1;" id="btn-actualizar-envio" onclick="actualizarEnvio()">
+      <i class="bi bi-check-circle"></i> Actualizar
+    </button>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script>
+const API='http://localhost:8000/api';
+let enviosCache=[];let pedidosSinEnvio=[];let envioEditId=null;
+
+const ESTADO_ENVIO={36:'Pendiente',37:'En tránsito',38:'Entregado'};
+const BADGE_ENVIO={36:'badge-pendiente',37:'badge-transito',38:'badge-entregado'};
+const ESTADOS_PEDIDO={9:'Pendiente',10:'Confirmado',11:'En proceso',12:'Enviado',13:'Entregado'};
+
+function toast(msg,tipo='verde'){
+  const t=document.createElement('div');t.className=`toast ${tipo}`;
+  const ic={verde:'check-circle',rojo:'exclamation-circle',amarillo:'exclamation-triangle'};
+  const col={verde:'var(--verde)',rojo:'var(--rojo-vivo)',amarillo:'var(--amarillo)'};
+  t.innerHTML=`<i class="bi bi-${ic[tipo]}" style="color:${col[tipo]}"></i> ${msg}`;
+  document.getElementById('toasts').appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3200);
+}
+function hdrs(){return{'Authorization':'Bearer '+obtenerToken(),'Accept':'application/json','Content-Type':'application/json'};}
+function fmtFecha(f){if(!f)return'—';const d=(f.split(' ')[0]).split('-');return d.length===3?`${d[2]}/${d[1]}/${d[0]}`:f.substring(0,10);}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  verificarRol(3);
+  // Fecha por defecto hoy
+  const hoy=new Date().toISOString().split('T')[0];
+  document.getElementById('env-fecha-envio').value=hoy;
+  cargarEnvios();
+  cargarPedidosSinEnvio();
+});
+
+/* ======= ENVÍOS ======= */
+async function cargarEnvios(){
+  document.getElementById('tabla-body').innerHTML=`<tr><td colspan="8"><div class="cargando"><div class="spinner"></div> Cargando...</div></td></tr>`;
+  try{
+    const r=await fetch(`${API}/envios`,{headers:hdrs()});
+    if(r.status===401){cerrarSesion();return;}
+    const d=await r.json();
+    enviosCache=Array.isArray(d.data)?d.data:(d.data?.data??[]);
+    document.getElementById('info-total').textContent=`${enviosCache.length} envíos`;
+    renderTablaEnvios(enviosCache);
+  }catch(e){
+    console.error(e);
+    document.getElementById('tabla-body').innerHTML=`<tr><td colspan="8"><div class="empty"><i class="bi bi-wifi-off"></i><p>Sin conexión</p></div></td></tr>`;
+  }
+}
+
+function renderTablaEnvios(lista){
+  const tbody=document.getElementById('tabla-body');
+  if(!lista.length){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><i class="bi bi-truck"></i><p>Sin envíos registrados</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=lista.map(e=>{
+    const pedido=e.pedido;
+    const u=pedido?.usuario||pedido?.user;
+    const cliente=u?`${u.name||''} ${u.apellido_paterno||''}`.trim():`Pedido #${e.pedido_id}`;
+    const metodo=e.metodo_envio||'—';
+    const esRetiro=metodo.toLowerCase().includes('retiro');
+    return `<tr>
+      <td class="td-id">#${e.pedido_id}</td>
+      <td style="font-weight:600;">${cliente}</td>
+      <td>${esRetiro?'<span style="color:var(--amarillo)"><i class="bi bi-shop"></i> Retiro</span>':'<span style="color:var(--cian)"><i class="bi bi-truck"></i> '+metodo+'</span>'}</td>
+      <td class="td-muted">${e.empresa_envio||'—'}</td>
+      <td>${e.codigo_seguimiento?`<span class="tracking-code">${e.codigo_seguimiento}</span>`:'<span class="td-muted">—</span>'}</td>
+      <td><span class="badge ${BADGE_ENVIO[e.estado_id]||'badge-pendiente'}">${ESTADO_ENVIO[e.estado_id]||'—'}</span></td>
+      <td class="td-muted">${fmtFecha(e.fecha_envio)}</td>
+      <td style="text-align:center;">
+        <button onclick="abrirEditar(${e.id})"
+          style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:var(--azul);border-radius:7px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer;"
+          onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.1)'">
+          <i class="bi bi-arrow-repeat"></i> Actualizar
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarLocal(){
+  const txt=document.getElementById('filtro-buscar').value.toLowerCase();
+  const metodo=document.getElementById('filtro-metodo').value.toLowerCase();
+  let lista=enviosCache;
+  if(txt) lista=lista.filter(e=>String(e.pedido_id).includes(txt)||(e.codigo_seguimiento||'').toLowerCase().includes(txt));
+  if(metodo) lista=lista.filter(e=>(e.metodo_envio||'').toLowerCase().includes(metodo));
+  document.getElementById('info-total').textContent=`${lista.length} envíos`;
+  renderTablaEnvios(lista);
+}
+
+/* ======= PEDIDOS SIN ENVÍO ======= */
+async function cargarPedidosSinEnvio(){
+  try{
+    const r=await fetch(`${API}/pedidos`,{headers:hdrs()});
+    const d=await r.json();
+    const todos=Array.isArray(d.data)?d.data:(d.data?.data??[]);
+    // Pedidos confirmados (10) o en proceso (11) sin envío asignado
+    pedidosSinEnvio=todos.filter(p=>(p.estado_id===10||p.estado_id===11)&&(!p.envios||p.envios.length===0));
+    document.getElementById('sin-envio-count').textContent=`${pedidosSinEnvio.length} pendientes de despacho`;
+    renderSinEnvio();
+    // Popular select del drawer
+    const sel=document.getElementById('env-pedido-id');
+    sel.innerHTML='<option value="">Seleccionar pedido...</option>'+
+      todos.filter(p=>p.estado_id!==13&&p.estado_id!==14).map(p=>`<option value="${p.id}">Pedido #${p.id} — Bs.${parseFloat(p.total||0).toFixed(2)}</option>`).join('');
+  }catch(e){console.error(e);}
+}
+
+function renderSinEnvio(){
+  const tbody=document.getElementById('tabla-sin-envio');
+  if(!pedidosSinEnvio.length){
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--verde);font-size:.85rem;"><i class="bi bi-check-circle-fill"></i> Todos los pedidos tienen envío asignado</td></tr>`;
+    return;
+  }
+  const BADGE={9:'badge-pendiente',10:'badge-confirmado',11:'badge-proceso'};
+  tbody.innerHTML=pedidosSinEnvio.map(p=>{
+    const u=p.usuario||p.user;
+    const cliente=u?`${u.name||''} ${u.apellido_paterno||''}`.trim():`#${p.user_id}`;
+    return `<tr>
+      <td class="td-id">#${p.id}</td>
+      <td style="font-weight:600;">${cliente}</td>
+      <td style="font-weight:700;">Bs.${parseFloat(p.total||0).toFixed(2)}</td>
+      <td><span class="badge ${BADGE[p.estado_id]||'badge-pendiente'}">${ESTADOS_PEDIDO[p.estado_id]||'—'}</span></td>
+      <td style="text-align:center;">
+        <button onclick="abrirNuevoEnvioConPedido(${p.id})"
+          style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--verde);border-radius:7px;padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer;"
+          onmouseover="this.style.background='rgba(34,197,94,.2)'" onmouseout="this.style.background='rgba(34,197,94,.1)'">
+          <i class="bi bi-truck"></i> Despachar
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ======= DRAWER NUEVO ENVÍO ======= */
+function abrirNuevoEnvio(){
+  document.getElementById('env-pedido-id').value='';
+  document.getElementById('overlay-nuevo').classList.add('visible');
+  document.getElementById('drawer-nuevo').classList.add('visible');
+}
+function abrirNuevoEnvioConPedido(pedidoId){
+  document.getElementById('env-pedido-id').value=pedidoId;
+  // Generar tracking automático
+  document.getElementById('env-tracking').value=`ENV-${new Date().getFullYear()}-${String(pedidoId).padStart(4,'0')}`;
+  document.getElementById('overlay-nuevo').classList.add('visible');
+  document.getElementById('drawer-nuevo').classList.add('visible');
+}
+function cerrarNuevo(){
+  document.getElementById('overlay-nuevo').classList.remove('visible');
+  document.getElementById('drawer-nuevo').classList.remove('visible');
+}
+
+async function crearEnvio(){
+  const pedido_id=document.getElementById('env-pedido-id').value;
+  if(!pedido_id){toast('Selecciona un pedido','amarillo');return;}
+  const metodo_envio=document.getElementById('env-metodo').value;
+  const empresa_envio=document.getElementById('env-empresa').value.trim();
+  const costo_envio=parseFloat(document.getElementById('env-costo').value||0);
+  const codigo_seguimiento=document.getElementById('env-tracking').value.trim();
+  const fecha_envio=document.getElementById('env-fecha-envio').value;
+  const fecha_entrega=document.getElementById('env-fecha-entrega').value;
+  const estado_id=parseInt(document.getElementById('env-estado').value);
+
+  const btn=document.getElementById('btn-crear-envio');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div>';
+  try{
+    const r=await fetch(`${API}/envios`,{
+      method:'POST',headers:hdrs(),
+      body:JSON.stringify({pedido_id,metodo_envio,empresa_envio,costo_envio,codigo_seguimiento,fecha_envio,fecha_entrega,estado_id})
+    });
+    const d=await r.json();
+    if(!r.ok||!d.status) throw new Error(d.message||'Error al registrar envío');
+    toast(`Envío registrado para pedido #${pedido_id}`,'verde');
+    cerrarNuevo();
+    cargarEnvios();
+    cargarPedidosSinEnvio();
+  }catch(e){toast(e.message,'rojo');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-truck"></i> Registrar envío';}
+}
+
+/* ======= DRAWER EDITAR ENVÍO ======= */
+function abrirEditar(id){
+  const env=enviosCache.find(e=>e.id===id);
+  if(!env)return;
+  envioEditId=id;
+  document.getElementById('editar-titulo').textContent=`Envío — Pedido #${env.pedido_id}`;
+
+  // Calcular paso del timeline
+  const paso=env.estado_id===38?3:env.estado_id===37?2:1;
+  const pasos=['Preparando','En tránsito','Entregado'];
+  const tlHtml=pasos.map((s,i)=>`
+    <div class="t-step ${i<paso-1?'done':i===paso-1?'active':''}">
+      <div class="t-dot"></div>
+      <div class="t-lbl">${s}</div>
+    </div>`).join('');
+
+  document.getElementById('drawer-editar-body').innerHTML=`
+    <div class="seccion-label">Estado actual</div>
+    <div class="timeline">${tlHtml}</div>
+
+    <div class="sep"></div>
+    <div class="seccion-label">Información del envío</div>
+    <div class="info-row"><span class="info-label">Pedido</span><span class="info-val td-id">#${env.pedido_id}</span></div>
+    <div class="info-row"><span class="info-label">Método</span><span class="info-val">${env.metodo_envio||'—'}</span></div>
+    <div class="info-row"><span class="info-label">Empresa</span><span class="info-val">${env.empresa_envio||'—'}</span></div>
+    <div class="info-row"><span class="info-label">Tracking</span><span class="info-val"><span class="tracking-code">${env.codigo_seguimiento||'—'}</span></span></div>
+    <div class="info-row"><span class="info-label">Costo</span><span class="info-val">Bs.${parseFloat(env.costo_envio||0).toFixed(2)}</span></div>
+    <div class="info-row"><span class="info-label">Fecha envío</span><span class="info-val">${fmtFecha(env.fecha_envio)}</span></div>
+    <div class="info-row"><span class="info-label">Entrega estimada</span><span class="info-val">${fmtFecha(env.fecha_entrega)}</span></div>
+
+    <div class="sep"></div>
+    <div class="seccion-label">Actualizar</div>
+    <div class="form-group">
+      <label class="form-label">Nuevo estado</label>
+      <select class="form-select-dark" id="edit-env-estado">
+        ${Object.entries(ESTADO_ENVIO).map(([k,v])=>`<option value="${k}" ${env.estado_id==k?'selected':''}>${v}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Código de tracking</label>
+      <input type="text" class="form-input" id="edit-env-tracking" value="${env.codigo_seguimiento||''}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha de entrega real</label>
+      <input type="date" class="form-input" id="edit-env-fecha-entrega" value="${env.fecha_entrega?env.fecha_entrega.split(' ')[0]:''}">
+    </div>
+  `;
+
+  document.getElementById('overlay-editar').classList.add('visible');
+  document.getElementById('drawer-editar').classList.add('visible');
+}
+function cerrarEditar(){
+  document.getElementById('overlay-editar').classList.remove('visible');
+  document.getElementById('drawer-editar').classList.remove('visible');
+  envioEditId=null;
+}
+
+async function actualizarEnvio(){
+  if(!envioEditId)return;
+  const estado_id=parseInt(document.getElementById('edit-env-estado').value);
+  const codigo_seguimiento=document.getElementById('edit-env-tracking').value.trim();
+  const fecha_entrega=document.getElementById('edit-env-fecha-entrega').value;
+  const btn=document.getElementById('btn-actualizar-envio');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div>';
+  try{
+    const r=await fetch(`${API}/envios/${envioEditId}`,{
+      method:'PUT',headers:hdrs(),
+      body:JSON.stringify({estado_id,codigo_seguimiento,fecha_entrega:fecha_entrega||undefined})
+    });
+    const d=await r.json();
+    if(!r.ok||!d.status) throw new Error(d.message||'Error al actualizar');
+    toast(`Envío #${envioEditId} actualizado — ${ESTADO_ENVIO[estado_id]}`,'verde');
+    cerrarEditar();cargarEnvios();cargarPedidosSinEnvio();
+  }catch(e){toast(e.message,'rojo');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-check-circle"></i> Actualizar';}
+}
+</script>
+</body>
+</html>

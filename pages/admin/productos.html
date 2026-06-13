@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoRepRacing10 — Repuestos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+    <style>
+        /* ── MODALES ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: .25s ease;
+        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 60px rgba(0,0,0,.2);
+            transform: translateY(20px);
+            transition: .25s ease;
+        }
+        .modal-overlay.show .modal-box { transform: translateY(0); }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .modal-head h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+        .modal-body { padding: 1.5rem; }
+        .modal-foot {
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-close-x {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #6b7280;
+            line-height: 1;
+            padding: 0;
+            transition: color .2s;
+        }
+        .btn-close-x:hover { color: #111; }
+
+        /* ── FORMULARIO ── */
+        .field-group { margin-bottom: 1rem; }
+
+        .field-group label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #6b7280;
+            margin-bottom: .35rem;
+        }
+
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            width: 100%;
+            padding: .65rem .9rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: .875rem;
+            color: #111827;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            background: #fff;
+            font-family: inherit;
+        }
+
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus {
+            border-color: #CC0000;
+            box-shadow: 0 0 0 3px rgba(204,0,0,.1);
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* ── IMAGEN PREVIEW ── */
+        .img-upload {
+            margin-top: .5rem;
+            width: 100%;
+            height: 130px;
+            border: 2px dashed #e5e7eb;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: border-color .2s;
+        }
+        .img-upload:hover { border-color: #CC0000; }
+        .img-upload img { width: 100%; height: 100%; object-fit: cover; }
+        .img-upload-placeholder { text-align: center; color: #9ca3af; font-size: .82rem; }
+        .img-upload-placeholder i { font-size: 2rem; display: block; margin-bottom: .3rem; }
+
+        /* ── BOTONES ── */
+        .btn-honda {
+            background: #CC0000;
+            color: #fff;
+            border: none;
+            padding: .65rem 1.3rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: .875rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            transition: background .2s, transform .15s;
+            font-family: inherit;
+        }
+        .btn-honda:hover { background: #990000; }
+        .btn-honda:active { transform: scale(.97); }
+
+        .btn-ghost {
+            background: transparent;
+            color: #6b7280;
+            border: 1.5px solid #e5e7eb;
+            padding: .65rem 1.3rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: .875rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color .2s, color .2s;
+        }
+        .btn-ghost:hover { border-color: #9ca3af; color: #111; }
+
+        .btn-icono {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all .2s;
+        }
+        .btn-editar  { background: #dbeafe; color: #1d4ed8; }
+        .btn-editar:hover  { background: #bfdbfe; }
+        .btn-borrar  { background: #fee2e2; color: #CC0000; }
+        .btn-borrar:hover  { background: #fecaca; }
+
+        /* ── TOOLBAR ── */
+        .page-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .toolbar-info h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #111827;
+            margin: 0 0 .2rem;
+        }
+        .toolbar-info p { font-size: .82rem; color: #6b7280; margin: 0; }
+
+        /* ── FILTROS ── */
+        .filtros-bar {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: #f3f4f6;
+            border: 1.5px solid transparent;
+            padding: .6rem 1rem;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+            transition: border-color .2s;
+        }
+        .search-wrap:focus-within { border-color: #CC0000; background: #fff; }
+        .search-wrap i { color: #CC0000; font-size: 1rem; flex-shrink: 0; }
+        .search-wrap input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: .875rem;
+            width: 100%;
+            color: #111827;
+            font-family: inherit;
+        }
+
+        select.filtro {
+            padding: .6rem .9rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: .875rem;
+            color: #111827;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        select.filtro:focus { border-color: #CC0000; }
+
+        /* ── TABLA ── */
+        .tabla-contenedor {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,.07);
+        }
+
+        .tabla-repuestos {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tabla-repuestos thead {
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .tabla-repuestos th {
+            padding: .9rem 1rem;
+            text-align: left;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+        .tabla-repuestos td {
+            padding: .85rem 1rem;
+            border-top: 1px solid #f3f4f6;
+            font-size: .875rem;
+            color: #111827;
+            vertical-align: middle;
+        }
+        .tabla-repuestos tbody tr:hover { background: #fafafa; }
+
+        .prod-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+        .prod-img-placeholder {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #CC0000;
+            font-size: 1.3rem;
+        }
+        .prod-nombre { font-weight: 700; color: #111827; }
+        .prod-desc { font-size: .78rem; color: #6b7280; margin-top: .1rem; }
+
+        .badge-stock {
+            padding: .28rem .7rem;
+            border-radius: 999px;
+            font-size: .73rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .stock-ok  { background: #dcfce7; color: #15803d; }
+        .stock-low { background: #fef3c7; color: #92400e; }
+        .stock-out { background: #fee2e2; color: #CC0000; }
+
+        .acciones { display: flex; gap: .4rem; align-items: center; }
+
+        /* ── PAGINACIÓN ── */
+        .paginacion-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #f3f4f6;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+        .paginacion-info { font-size: .8rem; color: #6b7280; }
+        .paginacion-controles { display: flex; gap: .4rem; }
+
+        .pag-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1.5px solid #e5e7eb;
+            background: #fff;
+            color: #111827;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .pag-btn:hover { border-color: #CC0000; color: #CC0000; }
+        .pag-btn.activo { background: #CC0000; border-color: #CC0000; color: #fff; }
+        .pag-btn:disabled { opacity: .4; cursor: default; }
+
+        /* ── EMPTY STATE ── */
+        .estado-vacio {
+            text-align: center;
+            padding: 3.5rem 1rem;
+        }
+        .estado-vacio i { font-size: 3rem; color: #d1d5db; display: block; margin-bottom: .75rem; }
+        .estado-vacio p { color: #6b7280; font-size: .9rem; }
+
+        /* ── CONFIRM MODAL ── */
+        .confirm-box {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 380px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0,0,0,.2);
+            transform: translateY(20px);
+            transition: .25s ease;
+        }
+        .modal-overlay.show .confirm-box { transform: translateY(0); }
+        .confirm-icono {
+            width: 60px;
+            height: 60px;
+            background: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.6rem;
+            color: #CC0000;
+        }
+        .confirm-box h2 { font-size: 1.05rem; font-weight: 800; color: #111827; margin-bottom: .4rem; }
+        .confirm-box p  { font-size: .85rem; color: #6b7280; margin-bottom: 1.5rem; }
+        .confirm-acciones { display: flex; gap: .75rem; justify-content: center; }
+
+        /* ── TOAST ── */
+        .toast-contenedor {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+        .toast-msg {
+            background: #111827;
+            color: #fff;
+            padding: .75rem 1.25rem;
+            border-radius: 10px;
+            font-size: .875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,.2);
+            animation: subirToast .25s ease;
+            min-width: 260px;
+        }
+        .toast-msg.toast-ok    { border-left: 4px solid #16a34a; }
+        .toast-msg.toast-error { border-left: 4px solid #CC0000; }
+
+        @keyframes subirToast {
+            from { transform: translateY(16px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .field-row { grid-template-columns: 1fr; }
+            .toolbar-info h1 { font-size: 1.2rem; }
+            .tabla-contenedor { overflow-x: auto; }
+            .tabla-repuestos  { white-space: nowrap; }
+            .btn-honda { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Overlay menú móvil -->
+<div id="overlay-menu" aria-hidden="true"></div>
+
+<!-- Toasts -->
+<output class="toast-contenedor" id="toast-contenedor" aria-live="polite"></output>
+
+<!-- ══════════════════════════════════════════
+     MODAL: AGREGAR / EDITAR REPUESTO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-producto" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <article class="modal-box">
+        <header class="modal-head">
+            <h2 id="modal-titulo">Agregar repuesto</h2>
+            <button class="btn-close-x" onclick="cerrarModal()" aria-label="Cerrar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <section class="modal-body">
+            <input type="hidden" id="prod-id">
+
+            <fieldset style="border:none;padding:0;margin:0">
+                <legend class="visually-hidden">Datos del repuesto</legend>
+
+                <div class="field-group">
+                    <label for="prod-nombre">Nombre del repuesto *</label>
+                    <input type="text" id="prod-nombre" placeholder="Ej: Filtro de aceite CB300" autocomplete="off">
+                </div>
+
+                <div class="field-group">
+                    <label for="prod-descripcion">Descripción</label>
+                    <textarea id="prod-descripcion" rows="2" placeholder="Descripción breve del repuesto..."></textarea>
+                </div>
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="prod-codigo">Código *</label>
+                        <input type="text" id="prod-codigo" placeholder="Ej: HND-0341" autocomplete="off">
+                    </div>
+                    <div class="field-group">
+                        <label for="prod-categoria">Categoría</label>
+                        <select id="prod-categoria">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="prod-precio">Precio venta (Bs.) *</label>
+                        <input type="number" id="prod-precio" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="field-group">
+                        <label for="prod-stock">Stock actual *</label>
+                        <input type="number" id="prod-stock" placeholder="0" min="0" step="1">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="prod-costo">Precio costo (Bs.)</label>
+                        <input type="number" id="prod-costo" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="field-group">
+                        <label for="prod-stock-min">Stock mínimo</label>
+                        <input type="number" id="prod-stock-min" placeholder="5" min="0" step="1">
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Imagen</label>
+                    <input type="file" id="prod-imagen" accept="image/*" style="display:none" onchange="previsualizarImagen(event)">
+                    <div class="img-upload" id="img-upload" onclick="document.getElementById('prod-imagen').click()" role="button" tabindex="0" aria-label="Subir imagen">
+                        <div class="img-upload-placeholder">
+                            <i class="bi bi-image" aria-hidden="true"></i>
+                            Clic para subir imagen
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </section>
+
+        <footer class="modal-foot">
+            <button class="btn-ghost" type="button" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-honda" type="button" onclick="guardarProducto()">
+                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                <span id="btn-guardar-texto">Guardar repuesto</span>
+            </button>
+        </footer>
+    </article>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: CONFIRMAR ELIMINAR
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-confirmar" role="alertdialog" aria-modal="true" aria-labelledby="confirm-titulo">
+    <article class="confirm-box">
+        <span class="confirm-icono" aria-hidden="true">
+            <i class="bi bi-trash3"></i>
+        </span>
+        <h2 id="confirm-titulo">Eliminar repuesto</h2>
+        <p id="confirm-mensaje">¿Estás seguro de que quieres eliminarlo? Esta acción no se puede deshacer.</p>
+        <footer class="confirm-acciones">
+            <button class="btn-ghost" type="button" onclick="cerrarConfirmar()">Cancelar</button>
+            <button class="btn-honda" type="button" id="btn-confirmar-eliminar">
+                <i class="bi bi-trash3" aria-hidden="true"></i> Eliminar
+            </button>
+        </footer>
+    </article>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LAYOUT PRINCIPAL
+══════════════════════════════════════════ -->
+<div id="wrapper-dashboard">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar-admin" aria-label="Menú de administración">
+        <header class="sidebar-header">
+            <figure class="brand-logo">
+                <img src="../../assets/img/logo.png" alt="Logo MotoRepRacing10">
+            </figure>
+            <h2>Admin Panel</h2>
+        </header>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html" class="menu-link">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="productos.html" class="menu-link active" aria-current="page">
+                    <i class="bi bi-box-seam" aria-hidden="true"></i>
+                    <span>Repuestos</span>
+                </a>
+            </li>
+            <li>
+                <a href="pedidos.html" class="menu-link">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    <span>Pedidos</span>
+                </a>
+            </li>
+            <li>
+                <a href="usuarios.html" class="menu-link">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    <span>Usuarios</span>
+                </a>
+            </li>
+        </ul>
+
+        <footer class="sidebar-footer">
+            <button type="button" class="btn-logout" onclick="cerrarSesion()">
+                <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                <span>Cerrar Sesión</span>
+            </button>
+        </footer>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <header class="topbar-admin">
+            <button id="btn-menu" class="btn-menu-mobile" aria-label="Abrir menú" aria-expanded="false">
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+            <search class="topbar-search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" placeholder="Buscar repuestos, códigos, pedidos..." aria-label="Búsqueda global">
+            </search>
+            <section class="topbar-profile" aria-label="Perfil">
+                <span id="admin-name" class="profile-name">Cargando...</span>
+                <figure class="profile-avatar" aria-hidden="true">
+                    <i class="bi bi-person-circle"></i>
+                </figure>
+            </section>
+        </header>
+
+        <section class="dashboard-analytics" aria-label="Gestión de repuestos">
+
+            <!-- Toolbar -->
+            <header class="page-toolbar">
+                <div class="toolbar-info">
+                    <h1>Repuestos</h1>
+                    <p>Gestión completa del inventario</p>
+                </div>
+                <button class="btn-honda" type="button" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    Agregar repuesto
+                </button>
+            </header>
+
+            <!-- Filtros -->
+            <search class="filtros-bar" aria-label="Filtros de repuestos">
+                <label class="visually-hidden" for="filtro-busqueda">Buscar repuesto</label>
+                <div class="search-wrap">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" id="filtro-busqueda" placeholder="Buscar por nombre o código..." oninput="filtrarTabla()">
+                </div>
+
+                <label class="visually-hidden" for="filtro-categoria">Filtrar por categoría</label>
+                <select class="filtro" id="filtro-categoria" onchange="filtrarTabla()">
+                    <option value="">Todas las categorías</option>
+                </select>
+
+                <label class="visually-hidden" for="filtro-stock">Filtrar por stock</label>
+                <select class="filtro" id="filtro-stock" onchange="filtrarTabla()">
+                    <option value="">Todo el stock</option>
+                    <option value="ok">En stock</option>
+                    <option value="low">Stock bajo</option>
+                    <option value="out">Sin stock</option>
+                </select>
+            </search>
+
+            <!-- Tabla -->
+            <section class="tabla-contenedor" aria-label="Lista de repuestos">
+                <table class="tabla-repuestos">
+                    <thead>
+                        <tr>
+                            <th scope="col">Imagen</th>
+                            <th scope="col">Repuesto</th>
+                            <th scope="col">Código</th>
+                            <th scope="col">Categoría</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Stock</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-productos">
+                        <tr>
+                            <td colspan="7">
+                                <p class="estado-vacio">
+                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                                    Cargando repuestos...
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <footer class="paginacion-bar">
+                    <p class="paginacion-info" id="pag-info" aria-live="polite">— repuestos</p>
+                    <nav class="paginacion-controles" id="pag-controles" aria-label="Páginas"></nav>
+                </footer>
+            </section>
+
+        </section>
+    </main>
+</div>
+
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script>
+/* ============================================================
+   ESTADO
+============================================================ */
+let todosLosProductos  = [];
+let productosFiltrados = [];
+let paginaActual = 1;
+const POR_PAGINA = 10;
+
+/* ============================================================
+   INIT
+============================================================ */
+verificarRol(1);
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    // Nombre admin
+    const usuario = getUsuario();
+    if (usuario) {
+        document.getElementById('admin-name').textContent =
+            usuario.name || usuario.nombre || 'Administrador';
+    }
+
+    // Menú móvil
+    const btnMenu = document.getElementById('btn-menu');
+    const sidebar = document.querySelector('.sidebar-admin');
+    const overlay = document.getElementById('overlay-menu');
+
+    btnMenu?.addEventListener('click', () => {
+        const abierto = sidebar.classList.toggle('show');
+        overlay.classList.toggle('show', abierto);
+        btnMenu.setAttribute('aria-expanded', abierto);
+    });
+
+    overlay?.addEventListener('click', () => {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        btnMenu.setAttribute('aria-expanded', false);
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+    });
+
+    // Cargar datos en paralelo
+    await Promise.all([cargarProductos(), cargarCategorias()]);
+});
+
+/* ============================================================
+   CARGAR CATEGORÍAS (API)
+============================================================ */
+async function cargarCategorias() {
+    try {
+        const resp = await getCategorias();
+        const cats = resp?.data ?? [];
+
+        console.log('Total categorías:', cats.length);
+
+        const selectForm   = document.getElementById('prod-categoria');
+        const selectFiltro = document.getElementById('filtro-categoria');
+
+        console.log('selectForm:', selectForm);
+        console.log('selectFiltro:', selectFiltro);
+
+        if (!selectForm || !selectFiltro) {
+            console.error('❌ No se encontraron los selects en el DOM');
+            return;
+        }
+
+        // Limpiar antes de agregar para evitar duplicados
+        selectForm.innerHTML   = '<option value="">Seleccionar...</option>';
+        selectFiltro.innerHTML = '<option value="">Todas las categorías</option>';
+
+        cats.forEach(cat => {
+            selectForm.appendChild(new Option(cat.nombre, cat.id));
+            selectFiltro.appendChild(new Option(cat.nombre, cat.id));
+        });
+
+        console.log('✅ Categorías cargadas correctamente');
+
+    } catch (err) {
+        console.error('Error cargando categorías:', err);
+    }
+}
+
+/* ============================================================
+   CARGAR PRODUCTOS
+============================================================ */
+async function cargarProductos() {
+    const tbody = document.getElementById('tbody-productos');
+
+    try {
+        const resp = await getProductos();
+
+        if (resp?.status && resp?.data?.data)        todosLosProductos = resp.data.data;
+        else if (resp?.status && Array.isArray(resp?.data)) todosLosProductos = resp.data;
+        else todosLosProductos = [];
+
+        productosFiltrados = [...todosLosProductos];
+        paginaActual = 1;
+        renderizarTabla();
+
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `
+            <tr><td colspan="7">
+                <p class="estado-vacio">
+                    <i class="bi bi-exclamation-triangle" style="color:#CC0000" aria-hidden="true"></i>
+                    Error al cargar los repuestos.
+                </p>
+            </td></tr>`;
+    }
+}
+
+/* ============================================================
+   RENDERIZAR TABLA
+============================================================ */
+function renderizarTabla() {
+    const tbody  = document.getElementById('tbody-productos');
+    const total  = productosFiltrados.length;
+    const inicio = (paginaActual - 1) * POR_PAGINA;
+    const fin    = Math.min(inicio + POR_PAGINA, total);
+    const pagina = productosFiltrados.slice(inicio, fin);
+
+    if (pagina.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="7">
+                <p class="estado-vacio">
+                    <i class="bi bi-box-seam" aria-hidden="true"></i>
+                    No se encontraron repuestos.
+                </p>
+            </td></tr>`;
+        document.getElementById('pag-info').textContent = '0 repuestos';
+        document.getElementById('pag-controles').innerHTML = '';
+        return;
+    }
+
+    tbody.innerHTML = pagina.map(prod => {
+        const nombre   = prod.nombre      || 'Sin nombre';
+        const desc     = prod.descripcion || '';
+        const codigo   = prod.codigo      || 'N/A';
+        const cat = prod.subcategoria?.nombre ?? '—';        const precio   = parseFloat(prod.precio_venta || 0).toFixed(2);
+        const stockNum = prod.stock
+            ? parseInt(prod.stock.cantidad_actual ?? prod.stock ?? 0)
+            : parseInt(prod.cantidad_actual ?? 0);
+        const stockMin = prod.stock?.stock_minimo ?? 5;
+
+        let badgeClass = 'stock-ok';
+        let badgeText  = stockNum + ' en stock';
+        if (stockNum === 0)            { badgeClass = 'stock-out'; badgeText = 'Sin stock'; }
+        else if (stockNum <= stockMin) { badgeClass = 'stock-low'; badgeText = stockNum + ' (bajo)'; }
+
+        let imgSrc = null;
+        if (prod.imagenes?.length > 0) imgSrc = 'http://localhost:8000/' + prod.imagenes[0].imagen;
+
+        const imgHtml = imgSrc
+            ? `<img src="${imgSrc}" class="prod-img" alt="${nombre}" loading="lazy"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+               <span class="prod-img-placeholder" style="display:none" aria-hidden="true"><i class="bi bi-box-seam"></i></span>`
+            : `<span class="prod-img-placeholder" aria-hidden="true"><i class="bi bi-box-seam"></i></span>`;
+
+        return `
+        <tr>
+            <td>${imgHtml}</td>
+            <td>
+                <strong class="prod-nombre">${nombre}</strong>
+                ${desc ? `<small class="prod-desc">${desc.substring(0,60)}${desc.length>60?'…':''}</small>` : ''}
+            </td>
+            <td><code>${codigo}</code></td>
+            <td>${cat}</td>
+            <td><strong>Bs. ${precio}</strong></td>
+            <td><span class="badge-stock ${badgeClass}">${badgeText}</span></td>
+            <td>
+                <span class="acciones">
+                    <button class="btn-icono btn-editar" title="Editar ${nombre}" onclick="abrirModalEditar(${prod.id})">
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </button>
+                    <button class="btn-icono btn-borrar" title="Eliminar ${nombre}" onclick="pedirConfirmacion(${prod.id}, '${nombre.replace(/'/g,"\\'")}')">
+                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                    </button>
+                </span>
+            </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('pag-info').textContent =
+        `${inicio + 1}–${fin} de ${total} repuesto${total !== 1 ? 's' : ''}`;
+
+    renderizarPaginacion(total);
+}
+
+/* ============================================================
+   PAGINACIÓN
+============================================================ */
+function renderizarPaginacion(total) {
+    const totalPags = Math.ceil(total / POR_PAGINA);
+    const nav = document.getElementById('pag-controles');
+    if (totalPags <= 1) { nav.innerHTML = ''; return; }
+
+    let html = `<button class="pag-btn" onclick="irPagina(${paginaActual - 1})" ${paginaActual === 1 ? 'disabled' : ''} aria-label="Página anterior">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i></button>`;
+
+    for (let i = 1; i <= totalPags; i++) {
+        if (totalPags > 7 && i > 2 && i < totalPags - 1 && Math.abs(i - paginaActual) > 1) {
+            if (i === 3 || i === totalPags - 2) html += `<span style="padding:0 .3rem;line-height:34px;color:#9ca3af">…</span>`;
+            continue;
+        }
+        html += `<button class="pag-btn ${i === paginaActual ? 'activo' : ''}" onclick="irPagina(${i})" aria-label="Página ${i}" ${i === paginaActual ? 'aria-current="page"' : ''}>${i}</button>`;
+    }
+
+    html += `<button class="pag-btn" onclick="irPagina(${paginaActual + 1})" ${paginaActual === totalPags ? 'disabled' : ''} aria-label="Página siguiente">
+        <i class="bi bi-chevron-right" aria-hidden="true"></i></button>`;
+
+    nav.innerHTML = html;
+}
+
+function irPagina(n) {
+    const total = Math.ceil(productosFiltrados.length / POR_PAGINA);
+    if (n < 1 || n > total) return;
+    paginaActual = n;
+    renderizarTabla();
+    document.querySelector('.tabla-contenedor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ============================================================
+   FILTROS
+============================================================ */
+function filtrarTabla() {
+    const busqueda    = document.getElementById('filtro-busqueda').value.toLowerCase().trim();
+    const categoriaV  = document.getElementById('filtro-categoria').value;
+    const stockFiltro = document.getElementById('filtro-stock').value;
+
+    productosFiltrados = todosLosProductos.filter(prod => {
+        const nombre   = (prod.nombre  || '').toLowerCase();
+        const codigo   = (prod.codigo  || '').toLowerCase();
+        const catId = String(prod.subcategoria?.categoria_id ?? '');        const stockNum = prod.stock
+            ? parseInt(prod.stock.cantidad_actual ?? prod.stock ?? 0)
+            : parseInt(prod.cantidad_actual ?? 0);
+        const stockMin = prod.stock?.stock_minimo ?? 5;
+
+        const matchBusqueda  = !busqueda    || nombre.includes(busqueda) || codigo.includes(busqueda);
+        const matchCategoria = !categoriaV || catId === categoriaV;
+        let matchStock = true;
+        if (stockFiltro === 'ok')  matchStock = stockNum > stockMin;
+        if (stockFiltro === 'low') matchStock = stockNum > 0 && stockNum <= stockMin;
+        if (stockFiltro === 'out') matchStock = stockNum === 0;
+
+        return matchBusqueda && matchCategoria && matchStock;
+    });
+
+    paginaActual = 1;
+    renderizarTabla();
+}
+
+/* ============================================================
+   MODAL NUEVO
+============================================================ */
+function abrirModalNuevo() {
+    limpiarModal();
+    document.getElementById('modal-titulo').textContent    = 'Agregar repuesto';
+    document.getElementById('btn-guardar-texto').textContent = 'Guardar repuesto';
+    document.getElementById('modal-producto').classList.add('show');
+    document.getElementById('prod-nombre').focus();
+}
+
+/* ============================================================
+   MODAL EDITAR
+============================================================ */
+function abrirModalEditar(id) {
+    const prod = todosLosProductos.find(p => p.id === id);
+    if (!prod) return;
+
+    limpiarModal();
+    document.getElementById('modal-titulo').textContent    = 'Editar repuesto';
+    document.getElementById('btn-guardar-texto').textContent = 'Guardar cambios';
+
+    document.getElementById('prod-id').value          = prod.id;
+    document.getElementById('prod-nombre').value      = prod.nombre      || '';
+    document.getElementById('prod-descripcion').value = prod.descripcion || '';
+    document.getElementById('prod-codigo').value      = prod.codigo      || '';
+    document.getElementById('prod-precio').value      = prod.precio_venta || '';
+    document.getElementById('prod-costo').value       = prod.precio_costo || '';
+
+    const stockNum = prod.stock ? parseInt(prod.stock.cantidad_actual ?? 0) : parseInt(prod.cantidad_actual ?? 0);
+    document.getElementById('prod-stock').value     = stockNum;
+    document.getElementById('prod-stock-min').value = prod.stock?.stock_minimo ?? '';
+
+    // Seleccionar categoría por id o por nombre
+    const selectCat = document.getElementById('prod-categoria');
+    const catId = String(prod.subcategoria?.categoria_id ?? '');    const catNom = prod.categoria?.nombre ?? prod.categoria ?? '';
+    for (const opt of selectCat.options) {
+    if (opt.value === catId) { opt.selected = true; break; }
+    }
+
+    // Imagen previa
+    if (prod.imagenes?.length > 0) {
+        const url = 'http://localhost:8000/' + prod.imagenes[0].imagen;
+        document.getElementById('img-upload').innerHTML = `<img src="${url}" alt="Imagen actual">`;
+    }
+
+    document.getElementById('modal-producto').classList.add('show');
+    document.getElementById('prod-nombre').focus();
+}
+
+/* ============================================================
+   GUARDAR (CREATE / UPDATE)
+============================================================ */
+async function guardarProducto() {
+    const id     = document.getElementById('prod-id').value;
+    const nombre = document.getElementById('prod-nombre').value.trim();
+    const codigo = document.getElementById('prod-codigo').value.trim();
+    const precio = document.getElementById('prod-precio').value;
+    const stock  = document.getElementById('prod-stock').value;
+
+    if (!nombre) { mostrarToast('El nombre es obligatorio.', 'error'); return; }
+    if (!codigo) { mostrarToast('El código es obligatorio.', 'error'); return; }
+    if (!precio) { mostrarToast('El precio es obligatorio.', 'error'); return; }
+    if (stock === '') { mostrarToast('El stock es obligatorio.', 'error'); return; }
+
+    const fd = new FormData();
+    fd.append('nombre',       nombre);
+    fd.append('descripcion',  document.getElementById('prod-descripcion').value.trim());
+    fd.append('codigo',       codigo);
+    fd.append('categoria_id', document.getElementById('prod-categoria').value);
+    fd.append('precio_venta', precio);
+    fd.append('precio_costo', document.getElementById('prod-costo').value || 0);
+    fd.append('stock',        stock);
+    fd.append('stock_minimo', document.getElementById('prod-stock-min').value || 5);
+
+    const archivo = document.getElementById('prod-imagen').files[0];
+    if (archivo) fd.append('imagen', archivo);
+
+    try {
+        const resp = id ? await actualizarProducto(id, fd) : await crearProducto(fd);
+
+        if (resp?.status) {
+            mostrarToast(id ? 'Repuesto actualizado.' : 'Repuesto agregado.', 'ok');
+            cerrarModal();
+            await cargarProductos();
+        } else {
+            mostrarToast(resp?.data?.message || 'Error al guardar.', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        mostrarToast('Error de conexión.', 'error');
+    }
+}
+
+/* ============================================================
+   ELIMINAR
+============================================================ */
+let idParaEliminar = null;
+
+function pedirConfirmacion(id, nombre) {
+    idParaEliminar = id;
+    document.getElementById('confirm-mensaje').textContent =
+        `¿Eliminar "${nombre}"? Esta acción no se puede deshacer.`;
+    document.getElementById('modal-confirmar').classList.add('show');
+
+    document.getElementById('btn-confirmar-eliminar').onclick = async () => {
+        try {
+            const resp = await eliminarProducto(idParaEliminar);
+            if (resp?.status) {
+                mostrarToast('Repuesto eliminado.', 'ok');
+                cerrarConfirmar();
+                await cargarProductos();
+            } else {
+                mostrarToast('Error al eliminar.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            mostrarToast('Error de conexión.', 'error');
+        }
+    };
+}
+
+function cerrarConfirmar() {
+    document.getElementById('modal-confirmar').classList.remove('show');
+    idParaEliminar = null;
+}
+
+/* ============================================================
+   HELPERS MODAL
+============================================================ */
+function cerrarModal() {
+    document.getElementById('modal-producto').classList.remove('show');
+}
+
+function limpiarModal() {
+    ['prod-id','prod-nombre','prod-descripcion','prod-codigo',
+     'prod-precio','prod-costo','prod-stock','prod-stock-min'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('prod-categoria').selectedIndex = 0;
+    document.getElementById('prod-imagen').value = '';
+    document.getElementById('img-upload').innerHTML = `
+        <div class="img-upload-placeholder">
+            <i class="bi bi-image" aria-hidden="true"></i>
+            Clic para subir imagen
+        </div>`;
+}
+
+/* ============================================================
+   PREVIEW IMAGEN
+============================================================ */
+function previsualizarImagen(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('img-upload').innerHTML =
+            `<img src="${e.target.result}" alt="Vista previa">`;
+    };
+    reader.readAsDataURL(file);
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+function mostrarToast(mensaje, tipo = 'ok') {
+    const cont  = document.getElementById('toast-contenedor');
+    const icon  = tipo === 'ok' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+    const color = tipo === 'ok' ? '#16a34a' : '#CC0000';
+    const el = document.createElement('p');
+    el.className = `toast-msg toast-${tipo}`;
+    el.innerHTML = `<i class="bi ${icon}" style="color:${color};font-size:1.1rem" aria-hidden="true"></i> ${mensaje}`;
+    cont.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+}
+
+/* ============================================================
+   ESC PARA CERRAR
+============================================================ */
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { cerrarModal(); cerrarConfirmar(); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago — MotoRepRacing10</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --rojo:        #DC0000;
+    --rojo-oscuro: #A30000;
+    --rojo-suave:  #FF2424;
+    --negro:       #0A0A0A;
+    --negro-mid:   #121212;
+    --negro-card:  #161616;
+    --blanco:      #FFFFFF;
+    --gris-claro:  #F5F5F5;
+    --gris-mid:    #E0E0E0;
+    --gris-texto:  #A0A0A0;
+    --verde:       #22c55e;
+    --font-main:   'Segoe UI', system-ui, sans-serif;
+    --transition:  0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius:      12px;
+    --shadow:      0 10px 30px rgba(0,0,0,0.5);
+    --border:      1px solid rgba(255,255,255,0.08);
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-main); background: var(--negro); color: var(--blanco); line-height: 1.6; min-height: 100vh; }
+a { text-decoration: none; color: inherit; }
+
+/* ===== NAVBAR ===== */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,10,0.95); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(220,0,0,0.35);
+    padding: 0 2rem; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.navbar-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.1rem; }
+.navbar-brand img { height: 38px; }
+.navbar-brand span { color: var(--rojo); }
+.btn-back {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+    color: var(--gris-mid); border-radius: 8px; padding: 8px 14px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all var(--transition);
+}
+.btn-back:hover { border-color: rgba(255,255,255,0.3); color: var(--blanco); }
+
+/* ===== LAYOUT ===== */
+.page-wrap { max-width: 980px; margin: 0 auto; padding: 88px 2rem 4rem; }
+
+/* ===== STEPS ===== */
+.steps-bar {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 2.5rem; background: var(--negro-card);
+    border: var(--border); border-radius: 10px; padding: 16px 24px;
+}
+.step { display: flex; align-items: center; gap: 10px; flex: 1; }
+.step-num {
+    width: 28px; height: 28px; border-radius: 50%; font-size: 0.78rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.step.done .step-num  { background: var(--verde); color: #000; }
+.step.active .step-num { background: var(--rojo); color: #fff; box-shadow: 0 0 10px rgba(220,0,0,0.4); }
+.step.pending .step-num { background: rgba(255,255,255,0.08); color: var(--gris-texto); }
+.step-label { font-size: 0.82rem; font-weight: 600; }
+.step.done .step-label   { color: var(--verde); }
+.step.active .step-label { color: var(--blanco); }
+.step.pending .step-label { color: var(--gris-texto); }
+.step-connector { flex: 0 0 32px; height: 2px; background: rgba(255,255,255,0.08); margin: 0 4px; }
+.step-connector.done { background: var(--verde); }
+
+/* ===== GRID ===== */
+.pago-grid { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start; }
+@media (max-width: 768px) { .pago-grid { grid-template-columns: 1fr; } }
+
+/* ===== PANEL BASE ===== */
+.panel {
+    background: var(--negro-card); border: var(--border); border-radius: 16px;
+    overflow: hidden; box-shadow: var(--shadow);
+}
+.panel-header {
+    padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; gap: 10px;
+}
+.panel-header i { color: var(--rojo-suave); font-size: 1.1rem; }
+.panel-header h2 { font-size: 1rem; font-weight: 700; }
+.panel-body { padding: 1.5rem; }
+
+/* ===== MÉTODOS ===== */
+.metodos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.metodo-card {
+    background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 16px 10px; cursor: pointer; text-align: center;
+    transition: all var(--transition); user-select: none;
+}
+.metodo-card:hover { border-color: rgba(220,0,0,0.4); background: rgba(220,0,0,0.04); }
+.metodo-card.activo { border-color: var(--rojo); background: rgba(220,0,0,0.12); }
+.metodo-card.activo .metodo-nombre { color: #ff4d4d; }
+.metodo-emoji { font-size: 1.8rem; margin-bottom: 6px; }
+.metodo-nombre { font-size: 0.8rem; font-weight: 700; color: var(--gris-texto); }
+
+/* ===== PANELES DE MÉTODO ===== */
+.metodo-panel { display: none; }
+.metodo-panel.visible { display: block; }
+
+/* QR */
+.qr-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    background: rgba(255,255,255,0.03); border: var(--border); border-radius: 12px; padding: 2rem;
+}
+.qr-img-frame {
+    width: 200px; height: 200px; background: #fff; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.qr-img-frame img { width: 100%; height: 100%; object-fit: contain; }
+.qr-instrucciones { text-align: center; color: var(--gris-texto); font-size: 0.88rem; line-height: 1.6; }
+.qr-instrucciones strong { color: var(--blanco); display: block; font-size: 1rem; margin-bottom: 6px; }
+
+/* Transferencia */
+.cuenta-info { display: flex; flex-direction: column; gap: 12px; }
+.cuenta-fila {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.04); border: var(--border); border-radius: 8px; padding: 12px 14px;
+}
+.cuenta-label { font-size: 0.78rem; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.05em; }
+.cuenta-valor { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.btn-copy {
+    background: none; border: none; color: var(--gris-texto); cursor: pointer;
+    font-size: 0.85rem; padding: 2px 6px; border-radius: 4px; transition: color var(--transition);
+}
+.btn-copy:hover { color: var(--rojo-suave); }
+.transfer-nota {
+    background: rgba(220,0,0,0.08); border: 1px solid rgba(220,0,0,0.2);
+    border-radius: 8px; padding: 12px; font-size: 0.83rem; color: #ff9999; margin-top: 4px;
+    display: flex; gap: 8px; align-items: flex-start;
+}
+
+/* Efectivo */
+.efectivo-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    background: rgba(255,255,255,0.03); border: var(--border); border-radius: 12px; padding: 2rem; text-align: center;
+}
+.efectivo-icon { font-size: 3.5rem; }
+.efectivo-titulo { font-size: 1.1rem; font-weight: 700; }
+.efectivo-desc { color: var(--gris-texto); font-size: 0.9rem; line-height: 1.6; }
+
+/* ===== COMPROBANTE ===== */
+.comprobante-wrap { margin-top: 1.5rem; }
+.comprobante-label { font-size: 0.82rem; font-weight: 700; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.upload-zone {
+    border: 2px dashed rgba(255,255,255,0.12); border-radius: 10px; padding: 24px;
+    text-align: center; cursor: pointer; transition: all var(--transition); position: relative;
+}
+.upload-zone:hover, .upload-zone.drag-over { border-color: rgba(220,0,0,0.5); background: rgba(220,0,0,0.05); }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 1.8rem; color: var(--gris-texto); margin-bottom: 8px; }
+.upload-text { font-size: 0.85rem; color: var(--gris-texto); }
+.upload-text span { color: var(--rojo-suave); font-weight: 600; }
+.upload-preview {
+    margin-top: 12px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem; color: #4ade80; display: none;
+}
+.upload-preview i { font-size: 1.1rem; }
+
+/* ===== RESUMEN PEDIDO ===== */
+.resumen-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
+.resumen-item { display: flex; align-items: center; gap: 10px; }
+.resumen-item-img {
+    width: 44px; height: 44px; border-radius: 8px; background: #1f1f1f;
+    object-fit: cover; flex-shrink: 0; border: var(--border);
+    display: flex; align-items: center; justify-content: center; color: #444; font-size: 1rem;
+}
+.resumen-item-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.resumen-item-info { flex: 1; min-width: 0; }
+.resumen-item-nombre { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resumen-item-qty { font-size: 0.78rem; color: var(--gris-texto); }
+.resumen-item-precio { font-size: 0.88rem; font-weight: 700; color: #ff3333; white-space: nowrap; }
+
+.divider { height: 1px; background: rgba(255,255,255,0.07); margin: 1rem 0; }
+
+.fila-resumen { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--gris-texto); margin-bottom: 6px; }
+.fila-total { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 800; color: var(--blanco); margin-top: 10px; }
+.fila-total span:last-child { color: #ff3333; }
+
+/* Envío editable */
+.envio-fila {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.88rem; color: var(--gris-texto); margin-bottom: 6px;
+}
+.envio-tipo { display: flex; gap: 6px; margin-bottom: 8px; }
+.envio-opt {
+    flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;
+    font-size: 0.78rem; font-weight: 600; color: var(--gris-texto); transition: all var(--transition);
+}
+.envio-opt:hover { border-color: rgba(220,0,0,0.4); }
+.envio-opt.activo { border-color: var(--rojo); background: rgba(220,0,0,0.1); color: #ff4d4d; }
+.envio-costo {
+    background: rgba(255,255,255,0.04); border: var(--border); border-radius: 8px;
+    padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.88rem; margin-bottom: 8px;
+}
+.envio-costo input[type=number] {
+    background: transparent; border: none; color: #ff3333; font-weight: 700; font-size: 0.95rem;
+    width: 80px; text-align: right; outline: none; font-family: var(--font-main);
+}
+.envio-costo input[type=number]::-webkit-inner-spin-button { opacity: 0; }
+
+/* ===== BOTÓN CONFIRMAR ===== */
+.btn-confirmar {
+    width: 100%; margin-top: 1.25rem; padding: 14px;
+    background: linear-gradient(135deg, var(--rojo) 0%, #B30000 100%);
+    color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all var(--transition); box-shadow: 0 4px 15px rgba(220,0,0,0.35);
+    letter-spacing: 0.02em;
+}
+.btn-confirmar:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 6px 22px rgba(220,0,0,0.5); }
+.btn-confirmar:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-confirmar.loading .btn-txt { display: none; }
+.btn-confirmar .spinner { display: none; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.btn-confirmar.loading .spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== MODAL ÉXITO ===== */
+.success-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 1rem;
+}
+.success-overlay.visible { opacity: 1; pointer-events: all; }
+.success-box {
+    background: #141414; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 3rem 2.5rem; max-width: 420px; width: 100%;
+    text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+    transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.success-overlay.visible .success-box { transform: scale(1); }
+.success-anim {
+    width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1.5rem;
+    background: rgba(34,197,94,0.15); border: 2px solid rgba(34,197,94,0.4);
+    display: flex; align-items: center; justify-content: center;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
+}
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-icon { font-size: 2.2rem; color: var(--verde); }
+.success-titulo { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.75rem; }
+.success-subtitulo { color: var(--gris-texto); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; }
+.success-pedido-id { display: inline-block; background: rgba(220,0,0,0.12); border: 1px solid rgba(220,0,0,0.3); color: #ff4d4d; font-weight: 700; font-size: 0.88rem; padding: 6px 16px; border-radius: 999px; margin-bottom: 1.5rem; }
+.btn-ir-envios {
+    width: 100%; padding: 13px; background: linear-gradient(135deg, var(--rojo), #B30000);
+    color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all var(--transition); box-shadow: 0 4px 15px rgba(220,0,0,0.3);
+}
+.btn-ir-envios:hover { filter: brightness(1.1); }
+
+/* ===== TOAST ===== */
+.toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 600; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+    background: #1a1a1a; border: var(--border); border-radius: 10px;
+    padding: 12px 18px; font-size: 0.88rem; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    min-width: 240px;
+}
+.toast.show { transform: translateX(0); }
+.toast.verde i { color: #4ade80; }
+.toast.rojo  i { color: var(--rojo-suave); }
+.toast.amarillo i { color: #fbbf24; }
+
+/* ===== MISC ===== */
+@media (max-width: 500px) {
+    .page-wrap { padding: 80px 1rem 3rem; }
+    .steps-bar { padding: 12px 14px; gap: 4px; }
+    .step-label { display: none; }
+    .metodos-grid { grid-template-columns: repeat(3, 1fr); }
+}
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+        <img src="assets/img/logo.png" alt="Logo" onerror="this.style.display='none'">
+        MotoRep<span>Racing10</span>
+    </a>
+    <a href="index.html" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</nav>
+
+<!-- ===== CONTENIDO ===== -->
+<div class="page-wrap">
+
+    <!-- Steps -->
+    <div class="steps-bar">
+        <div class="step done">
+            <div class="step-num"><i class="bi bi-check"></i></div>
+            <span class="step-label">Carrito</span>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step active">
+            <div class="step-num">2</div>
+            <span class="step-label">Pago</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step pending">
+            <div class="step-num">3</div>
+            <span class="step-label">Envío</span>
+        </div>
+    </div>
+
+    <div class="pago-grid">
+
+        <!-- COL IZQUIERDA: método de pago -->
+        <div>
+            <div class="panel" style="margin-bottom:1.5rem">
+                <div class="panel-header">
+                    <i class="bi bi-credit-card-2-front"></i>
+                    <h2>Método de pago</h2>
+                </div>
+                <div class="panel-body">
+
+                    <!-- Selector métodos -->
+                    <div class="metodos-grid">
+                        <div class="metodo-card activo" data-metodo="qr" onclick="selMetodo('qr')">
+                            <div class="metodo-emoji">📱</div>
+                            <div class="metodo-nombre">Código QR</div>
+                        </div>
+                        <div class="metodo-card" data-metodo="transfer" onclick="selMetodo('transfer')">
+                            <div class="metodo-emoji">🏦</div>
+                            <div class="metodo-nombre">Transferencia</div>
+                        </div>
+                        <div class="metodo-card" data-metodo="efectivo" onclick="selMetodo('efectivo')">
+                            <div class="metodo-emoji">💵</div>
+                            <div class="metodo-nombre">Efectivo</div>
+                        </div>
+                    </div>
+
+                    <!-- Panel QR -->
+                    <div class="metodo-panel visible" id="panel-qr">
+                        <div class="qr-wrap">
+                            <div class="qr-img-frame">
+                                <img src="assets/img/qr.png" alt="Código QR de pago"
+                                     onerror="this.parentElement.innerHTML='<div style=\'color:#333;font-size:2.5rem;display:flex;align-items:center;justify-content:center;height:100%;width:100%\'><i class=\'bi bi-qr-code\' style=\'font-size:5rem;color:#555\'></i></div>'">
+                            </div>
+                            <div class="qr-instrucciones">
+                                <strong>Escanea con tu app bancaria</strong>
+                                Apunta la cámara al código QR, ingresa el monto exacto
+                                y envía el comprobante de pago.
+                            </div>
+                        </div>
+                        <!-- Comprobante -->
+                        <div class="comprobante-wrap">
+                            <div class="comprobante-label">Comprobante de pago (opcional pero recomendado)</div>
+                            <div class="upload-zone" id="upload-qr">
+                                <input type="file" accept="image/*,.pdf" onchange="previewFile(this,'preview-qr')">
+                                <div class="upload-icon"><i class="bi bi-cloud-upload"></i></div>
+                                <div class="upload-text">Arrastra aquí o <span>elige archivo</span></div>
+                                <div style="font-size:0.75rem;color:#555;margin-top:4px">JPG, PNG o PDF — máx 5 MB</div>
+                            </div>
+                            <div class="upload-preview" id="preview-qr">
+                                <i class="bi bi-file-earmark-check"></i>
+                                <span id="preview-qr-name">archivo.jpg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Transferencia -->
+                    <div class="metodo-panel" id="panel-transfer">
+                        <div class="cuenta-info">
+                            <div class="cuenta-fila">
+                                <div>
+                                    <div class="cuenta-label">Banco</div>
+                                    <div class="cuenta-valor">Banco Unión S.A.</div>
+                                </div>
+                            </div>
+                            <div class="cuenta-fila">
+                                <div>
+                                    <div class="cuenta-label">Titular</div>
+                                    <div class="cuenta-valor">Racing 10 Repuestos</div>
+                                </div>
+                            </div>
+                            <div class="cuenta-fila">
+                                <div>
+                                    <div class="cuenta-label">Número de cuenta</div>
+                                    <div class="cuenta-valor" id="num-cuenta">1000-1234-5678-90
+                                        <button class="btn-copy" onclick="copiar('1000-1234-5678-90')" title="Copiar">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cuenta-fila">
+                                <div>
+                                    <div class="cuenta-label">Referencia / Concepto</div>
+                                    <div class="cuenta-valor" id="ref-transferencia">RACING-<span id="ref-id">???</span>
+                                        <button class="btn-copy" onclick="copiarRef()" title="Copiar">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transfer-nota" style="margin-top:12px">
+                            <i class="bi bi-info-circle-fill" style="flex-shrink:0;margin-top:2px"></i>
+                            <span>Usa exactamente el número de referencia para identificar tu pago. Una vez transferido, sube tu comprobante.</span>
+                        </div>
+                        <div class="comprobante-wrap">
+                            <div class="comprobante-label">Comprobante de transferencia</div>
+                            <div class="upload-zone" id="upload-transfer">
+                                <input type="file" accept="image/*,.pdf" onchange="previewFile(this,'preview-transfer')">
+                                <div class="upload-icon"><i class="bi bi-cloud-upload"></i></div>
+                                <div class="upload-text">Arrastra aquí o <span>elige archivo</span></div>
+                                <div style="font-size:0.75rem;color:#555;margin-top:4px">JPG, PNG o PDF — máx 5 MB</div>
+                            </div>
+                            <div class="upload-preview" id="preview-transfer">
+                                <i class="bi bi-file-earmark-check"></i>
+                                <span id="preview-transfer-name">archivo.jpg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Efectivo -->
+                    <div class="metodo-panel" id="panel-efectivo">
+                        <div class="efectivo-wrap">
+                            <div class="efectivo-icon">💵</div>
+                            <div class="efectivo-titulo">Pago en efectivo</div>
+                            <div class="efectivo-desc">
+                                Puedes pagar en nuestra tienda o al momento de recibir tu pedido
+                                (según el método de envío). No es necesario ningún comprobante previo.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- COL DERECHA: resumen del pedido -->
+        <div>
+            <div class="panel">
+                <div class="panel-header">
+                    <i class="bi bi-bag-check"></i>
+                    <h2>Resumen del pedido</h2>
+                </div>
+                <div class="panel-body">
+
+                    <!-- Items -->
+                    <div class="resumen-items" id="resumen-items">
+                        <!-- Se rellena por JS -->
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Tipo de entrega (editable) -->
+                    <div style="margin-bottom:12px">
+                        <div style="font-size:0.78rem;font-weight:700;color:var(--gris-texto);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">
+                            <i class="bi bi-truck"></i> Tipo de entrega
+                        </div>
+                        <div class="envio-tipo">
+                            <div class="envio-opt activo" data-tipo="delivery" onclick="selTipoEnvio('delivery')">
+                                🚚 Delivery
+                            </div>
+                            <div class="envio-opt" data-tipo="retiro" onclick="selTipoEnvio('retiro')">
+                                🏪 Retiro en tienda
+                            </div>
+                        </div>
+                        <div class="envio-costo" id="costo-envio-wrap">
+                            <span style="color:var(--gris-texto);font-size:0.82rem">Costo de envío</span>
+                            <div style="display:flex;align-items:center;gap:4px">
+                                <span style="color:var(--gris-texto);font-size:0.82rem">Bs.</span>
+                                <input type="number" id="input-envio" value="20" min="0" step="1" onchange="recalcularTotal()" oninput="recalcularTotal()">
+                            </div>
+                        </div>
+                        <div id="aviso-retiro" style="display:none; font-size:0.8rem; color:#fbbf24; padding:8px 12px; background:rgba(251,191,36,0.08); border-radius:8px; border:1px solid rgba(251,191,36,0.2);">
+                            <i class="bi bi-info-circle"></i> Recoge tu pedido en tienda. Sin costo de envío.
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Totales -->
+                    <div class="fila-resumen">
+                        <span>Subtotal</span>
+                        <span id="txt-subtotal">Bs. 0.00</span>
+                    </div>
+                    <div class="fila-resumen" id="fila-envio-costo">
+                        <span>Envío</span>
+                        <span id="txt-envio">Bs. 20.00</span>
+                    </div>
+                    <div class="fila-total">
+                        <span>Total</span>
+                        <span id="txt-total">Bs. 0.00</span>
+                    </div>
+
+                    <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarPago()">
+                        <span class="btn-txt"><i class="bi bi-bag-check-fill"></i> Confirmar y pagar</span>
+                        <div class="spinner"></div>
+                    </button>
+
+                    <div style="text-align:center;margin-top:12px;font-size:0.78rem;color:var(--gris-texto)">
+                        <i class="bi bi-shield-lock"></i> Pago seguro — tus datos están protegidos
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== MODAL ÉXITO ===== -->
+<div class="success-overlay" id="success-overlay">
+    <div class="success-box">
+        <div class="success-anim">
+            <i class="bi bi-check-lg success-icon"></i>
+        </div>
+        <div class="success-titulo">¡Pedido confirmado!</div>
+        <div class="success-subtitulo">
+            Tu pedido ha sido registrado correctamente. Recibirás actualizaciones sobre el estado de tu envío.
+        </div>
+        <div class="success-pedido-id" id="success-pedido-id"># Pedido —</div>
+        <button class="btn-ir-envios" onclick="irAEnvios()">
+            <i class="bi bi-truck"></i> Ver estado de mi envío
+        </button>
+        <a href="index.html" style="display:block;margin-top:12px;font-size:0.85rem;color:var(--gris-texto);text-decoration:underline">
+            Volver al inicio
+        </a>
+    </div>
+</div>
+
+<!-- ===== TOASTS ===== -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="assets/js/api.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+/* ================================================================
+   CONFIG
+================================================================ */
+const API_BASE_URL = 'http://localhost:8000/api';
+
+let carrito          = JSON.parse(sessionStorage.getItem('carrito_racing10') || '[]');
+let metodoActivo     = 'qr';
+let tipoEnvio        = 'delivery';
+let costoEnvio       = 20;
+let pedidoCreadoId   = null;
+
+/* ================================================================
+   INIT
+================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    // Verificar sesión
+    const token   = getToken();
+    const usuario = getUsuario();
+    if (!token || !usuario) {
+        toast('Debes iniciar sesión para pagar', 'amarillo');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+        return;
+    }
+
+    // Verificar carrito no vacío
+    if (!carrito.length) {
+        toast('Tu carrito está vacío', 'rojo');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+        return;
+    }
+
+    renderResumen();
+    recalcularTotal();
+
+    // Referencia de transferencia (temporal hasta obtener pedido_id)
+    document.getElementById('ref-id').textContent = 'XXXX';
+});
+
+/* ================================================================
+   MÉTODO DE PAGO
+================================================================ */
+function selMetodo(id) {
+    metodoActivo = id;
+    document.querySelectorAll('.metodo-card').forEach(c =>
+        c.classList.toggle('activo', c.dataset.metodo === id));
+    document.querySelectorAll('.metodo-panel').forEach(p =>
+        p.classList.remove('visible'));
+    document.getElementById(`panel-${id}`).classList.add('visible');
+}
+
+/* ================================================================
+   TIPO DE ENVÍO
+================================================================ */
+function selTipoEnvio(tipo) {
+    tipoEnvio = tipo;
+    document.querySelectorAll('.envio-opt').forEach(o =>
+        o.classList.toggle('activo', o.dataset.tipo === tipo));
+
+    const wrapCosto  = document.getElementById('costo-envio-wrap');
+    const avisoRetiro = document.getElementById('aviso-retiro');
+    const filaEnvio  = document.getElementById('fila-envio-costo');
+
+    if (tipo === 'retiro') {
+        wrapCosto.style.display  = 'none';
+        avisoRetiro.style.display = 'block';
+        filaEnvio.style.display  = 'none';
+        costoEnvio = 0;
+    } else {
+        wrapCosto.style.display  = 'flex';
+        avisoRetiro.style.display = 'none';
+        filaEnvio.style.display  = 'flex';
+        costoEnvio = parseFloat(document.getElementById('input-envio').value) || 20;
+    }
+    recalcularTotal();
+}
+
+/* ================================================================
+   TOTALES
+================================================================ */
+function recalcularTotal() {
+    const subtotal = carrito.reduce((a, c) => a + parseFloat(c.precio) * c.qty, 0);
+    if (tipoEnvio === 'delivery') {
+        costoEnvio = parseFloat(document.getElementById('input-envio').value) || 0;
+    }
+    const total = subtotal + costoEnvio;
+    document.getElementById('txt-subtotal').textContent = `Bs. ${subtotal.toFixed(2)}`;
+    document.getElementById('txt-envio').textContent    = `Bs. ${costoEnvio.toFixed(2)}`;
+    document.getElementById('txt-total').textContent    = `Bs. ${total.toFixed(2)}`;
+}
+
+/* ================================================================
+   RENDER RESUMEN
+================================================================ */
+function renderResumen() {
+    const wrap = document.getElementById('resumen-items');
+    wrap.innerHTML = carrito.map(c => {
+        const imgHtml = c.img
+            ? `<img src="${c.img}" alt="${c.nombre}">`
+            : `<i class="bi bi-gear"></i>`;
+        return `
+        <div class="resumen-item">
+            <div class="resumen-item-img">${imgHtml}</div>
+            <div class="resumen-item-info">
+                <div class="resumen-item-nombre">${c.nombre}</div>
+                <div class="resumen-item-qty">× ${c.qty}</div>
+            </div>
+            <div class="resumen-item-precio">Bs. ${(parseFloat(c.precio) * c.qty).toFixed(2)}</div>
+        </div>`;
+    }).join('');
+}
+
+/* ================================================================
+   UPLOAD PREVIEW
+================================================================ */
+function previewFile(input, previewId) {
+    const file    = input.files[0];
+    const preview = document.getElementById(previewId);
+    const nameEl  = document.getElementById(previewId + '-name');
+    if (file) {
+        preview.style.display = 'flex';
+        nameEl.textContent    = file.name;
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+['upload-qr', 'upload-transfer'].forEach(zoneId => {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault(); zone.classList.remove('drag-over');
+        const dt    = e.dataTransfer;
+        const input = zone.querySelector('input[type=file]');
+        if (dt.files.length) {
+            input.files = dt.files;
+            const pid = zoneId === 'upload-qr' ? 'preview-qr' : 'preview-transfer';
+            previewFile(input, pid);
+        }
+    });
+});
+
+/* ================================================================
+   COPIAR AL PORTAPAPELES
+================================================================ */
+function copiar(texto) {
+    navigator.clipboard.writeText(texto).then(() => toast('Copiado al portapapeles', 'verde'));
+}
+function copiarRef() {
+    const ref = `RACING-${pedidoCreadoId || 'XXXX'}`;
+    copiar(ref);
+}
+
+/* ================================================================
+   FLUJO COMPLETO DE COMPRA
+   1. Sincronizar cada producto al carrito de BD
+   2. Crear el pedido (toma el carrito activo de BD)
+   3. Registrar el pago
+================================================================ */
+async function confirmarPago() {
+    const token   = getToken();
+    const usuario = getUsuario();
+
+    if (!token || !usuario) {
+        toast('Sesión expirada, inicia sesión nuevamente', 'amarillo');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+        return;
+    }
+
+    if (!carrito.length) {
+        toast('El carrito está vacío', 'rojo');
+        return;
+    }
+
+    const btn = document.getElementById('btn-confirmar');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const HEADERS = {
+        'Content-Type':  'application/json',
+        'Accept':        'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+
+    try {
+        /* ---- PASO 1: Sincronizar carrito ---- */
+        toast('Sincronizando carrito...', 'amarillo');
+
+        for (const item of carrito) {
+            const r = await fetch(`${API_BASE_URL}/carritos`, {
+                method:  'POST',
+                headers: HEADERS,
+                body:    JSON.stringify({
+                    producto_id: item.id,
+                    cantidad:    item.qty
+                })
+            });
+            const d = await r.json();
+            if (r.status === 401) throw new Error('Sesión expirada, vuelve a iniciar sesión');
+            if (r.status === 403) throw new Error('No tienes permiso para esta acción');
+            // 400 puede ser "producto ya en carrito" — no es error fatal
+        }
+
+        /* ---- PASO 2: Crear pedido ---- */
+        toast('Creando pedido...', 'amarillo');
+
+        const respPedido = await fetch(`${API_BASE_URL}/pedidos`, {
+            method:  'POST',
+            headers: HEADERS,
+            body:    JSON.stringify({})
+        });
+        const dataPedido = await respPedido.json();
+
+        if (respPedido.status === 401) throw new Error('Sesión expirada, vuelve a iniciar sesión');
+        if (respPedido.status === 403) throw new Error('No tienes permiso para crear pedidos');
+        if (!respPedido.ok || !dataPedido.status) throw new Error(dataPedido.message || 'Error al crear el pedido');
+
+        pedidoCreadoId = dataPedido.data?.id;
+
+        /* ---- PASO 3: Registrar pago ---- */
+        toast('Registrando pago...', 'amarillo');
+
+        const subtotal = carrito.reduce((a, c) => a + parseFloat(c.precio) * c.qty, 0);
+        const total    = subtotal + costoEnvio;
+
+        const respPago = await fetch(`${API_BASE_URL}/pagos`, {
+            method:  'POST',
+            headers: HEADERS,
+            body:    JSON.stringify({
+                pedido_id:   pedidoCreadoId,
+                estado_id:   14,
+                metodo_pago: metodoActivo,
+                monto:       total
+            })
+        });
+        const dataPago = await respPago.json();
+
+        if (respPago.status === 401) throw new Error('Sesión expirada, vuelve a iniciar sesión');
+        // No bloqueamos si el pago falla — el pedido ya existe
+
+        /* ---- ÉXITO ---- */
+        sessionStorage.removeItem('carrito_racing10');
+        sessionStorage.setItem('ultimo_pedido_id', pedidoCreadoId);
+        mostrarExito(pedidoCreadoId);
+
+    } catch (err) {
+        console.error(err);
+        toast(err.message || 'Error al procesar el pedido', 'rojo');
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    }
+}
+/* ================================================================
+   ÉXITO
+================================================================ */
+function mostrarExito(pedidoId) {
+    document.getElementById('success-pedido-id').textContent = `# Pedido ${pedidoId}`;
+    document.getElementById('success-overlay').classList.add('visible');
+}
+
+function irAEnvios() {
+    window.location.href = `pages/envio.html?pedido_id=${pedidoCreadoId || ''}`;
+}
+
+/* ================================================================
+   TOAST
+================================================================ */
+function toast(msg, tipo = 'rojo') {
+    const icons = { rojo:'bi-exclamation-circle', verde:'bi-check-circle', amarillo:'bi-lightning' };
+    const el = document.createElement('div');
+    el.className = `toast ${tipo}`;
+    el.innerHTML = `<i class="bi ${icons[tipo]}"></i> ${msg}`;
+    document.getElementById('toast-wrap').appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2800);
+}
+</script>
+</body>
+</html>

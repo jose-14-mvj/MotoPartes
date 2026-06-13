@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Promoción - MotoRepRacing10</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-image: url('../assets/img/fondo.png');
+            background-size: cover; background-position: center;
+            background-attachment: fixed; color: white;
+        }
+
+        .container {
+            max-width: 800px; margin: 50px auto;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px; border-top: 5px solid #CC0000;
+            border-radius: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .logo { width: 300px; display: block; margin: 0 auto 20px; }
+        .promo-img { width: 100%; max-height: 400px; object-fit: cover; margin-bottom: 20px; border-radius: 5px; }
+        h1 { color: #CC0000; text-transform: uppercase; }
+        .descuento { font-size: 28px; font-weight: bold; color: #fff; margin: 10px 0; }
+        .estado-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 4px;
+            font-size: 12px; font-weight: bold; text-transform: uppercase;
+            background: #CC0000; margin-bottom: 10px;
+        }
+        .productos-incluidos { margin-top: 25px; }
+        .productos-incluidos h2 { color: #fff; font-size: 18px; border-bottom: 1px solid #444; padding-bottom: 8px; }
+        .producto-item {
+            display: flex; align-items: center; gap: 15px;
+            padding: 10px 0; border-bottom: 1px solid #333;
+        }
+        .producto-item img {
+            width: 60px; height: 60px; object-fit: cover; border-radius: 4px; background:#1a1a1a;
+        }
+        .producto-item .nombre { font-weight: bold; }
+        .producto-item .precio { color: #ff5555; font-size: 14px; }
+        .btn-volver {
+            display: inline-block; padding: 12px 25px; background: #CC0000;
+            color: white; text-decoration: none; border: none; cursor: pointer;
+            margin-top: 20px; text-transform: uppercase; font-weight: bold;
+        }
+        .btn-volver:hover { background: #990000; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="detalle-container">
+    <img src="../assets/img/logo.png" class="logo" alt="Logo">
+    <h1>Cargando promoción...</h1>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8000/api';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    function estadoTexto(estado_id) {
+        if (estado_id == 23) return 'ACTIVA';
+        if (estado_id == 24) return 'PROGRAMADA';
+        if (estado_id == 25) return 'VENCIDA';
+        return 'PROMO';
+    }
+
+    async function cargarDetalle() {
+        const container = document.getElementById('detalle-container');
+
+        if (!id) {
+            container.innerHTML = "<h1>Promoción no especificada</h1><a href='../index.html' class='btn-volver'>Volver al catálogo</a>";
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/promociones/${id}`);
+
+            if (!response.ok) {
+                container.innerHTML = `
+                    <img src="../assets/img/logo.png" class="logo" alt="Logo">
+                    <h1>Promoción no encontrada</h1>
+                    <p>La promoción que buscas no existe o ya no está disponible.</p>
+                    <a href="../index.html" class="btn-volver">Volver al catálogo</a>
+                `;
+                return;
+            }
+
+            const result = await response.json();
+            const promo  = result.data ?? result;
+
+            const titulo    = promo.titulo || 'Promoción';
+            const desc      = promo.descripcion || '';
+            const descuento = parseFloat(promo.valor_descuento || 0).toFixed(0);
+            const estadoTxt = estadoTexto(promo.estado_id);
+
+            let urlImg = '';
+            if (promo.imagenes?.length)
+                urlImg = `http://localhost:8000/${promo.imagenes[0].imagen}`;
+            else if (promo.productos?.length && promo.productos[0].imagenes?.length)
+                urlImg = `http://localhost:8000/${promo.productos[0].imagenes[0].imagen}`;
+
+            const imgHtml = urlImg ? `<img src="${urlImg}" class="promo-img" alt="${titulo}">` : '';
+
+            let productosHtml = '';
+            if (promo.productos?.length) {
+                productosHtml = `
+                    <div class="productos-incluidos">
+                        <h2>Productos incluidos</h2>
+                        ${promo.productos.map(p => {
+                            const pImg = p.imagenes?.length ? `http://localhost:8000/${p.imagenes[0].imagen}` : '';
+                            return `
+                            <a href="producto.html?id=${p.id}" style="text-decoration:none;color:inherit;">
+                                <div class="producto-item">
+                                    ${pImg ? `<img src="${pImg}" alt="${p.nombre}">` : '<div style="width:60px;height:60px;border-radius:4px;background:#1a1a1a;"></div>'}
+                                    <div>
+                                        <div class="nombre">${p.nombre}</div>
+                                        <div class="precio">Bs. ${parseFloat(p.precio_venta ?? 0).toFixed(2)}</div>
+                                    </div>
+                                </div>
+                            </a>`;
+                        }).join('')}
+                    </div>`;
+            }
+
+            container.innerHTML = `
+                <img src="../assets/img/logo.png" class="logo" alt="Logo">
+                <span class="estado-badge">${estadoTxt}</span>
+                <h1>${titulo}</h1>
+                ${imgHtml}
+                <p>${desc}</p>
+                <div class="descuento">-${descuento}% OFF</div>
+                ${productosHtml}
+                <a href="../index.html" class="btn-volver">Volver al catálogo</a>
+            `;
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = "<h1>Error al cargar</h1><p>No se pudo conectar con el servidor.</p><a href='../index.html' class='btn-volver'>Volver al catálogo</a>";
+        }
+    }
+
+    cargarDetalle();
+</script>
+</body>
+</html>

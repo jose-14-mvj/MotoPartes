@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoRepRacing10 — Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+    <style>
+        /* ── MODALES ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: .25s ease;
+        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 60px rgba(0,0,0,.2);
+            transform: translateY(20px);
+            transition: .25s ease;
+        }
+        .modal-overlay.show .modal-box { transform: translateY(0); }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
+        }
+        .modal-head h2 { font-size: 1.05rem; font-weight: 700; color: #111827; margin: 0; }
+        .modal-body { padding: 1.5rem; }
+        .modal-foot {
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            position: sticky;
+            bottom: 0;
+            background: #fff;
+        }
+
+        .btn-close-x {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #6b7280;
+            line-height: 1;
+            padding: 0;
+            transition: color .2s;
+        }
+        .btn-close-x:hover { color: #111; }
+
+        /* ── BOTONES ── */
+        .btn-honda {
+            background: #CC0000;
+            color: #fff;
+            border: none;
+            padding: .65rem 1.3rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: .875rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            transition: background .2s, transform .15s;
+            font-family: inherit;
+        }
+        .btn-honda:hover { background: #990000; }
+        .btn-honda:active { transform: scale(.97); }
+
+        .btn-ghost {
+            background: transparent;
+            color: #6b7280;
+            border: 1.5px solid #e5e7eb;
+            padding: .65rem 1.3rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: .875rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color .2s, color .2s;
+        }
+        .btn-ghost:hover { border-color: #9ca3af; color: #111; }
+
+        .btn-icono {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all .2s;
+        }
+        .btn-ver    { background: #dbeafe; color: #1d4ed8; }
+        .btn-ver:hover    { background: #bfdbfe; }
+        .btn-estado { background: #fef3c7; color: #92400e; }
+        .btn-estado:hover { background: #fde68a; }
+
+        /* ── TOOLBAR ── */
+        .page-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .toolbar-info h1 { font-size: 1.5rem; font-weight: 800; color: #111827; margin: 0 0 .2rem; }
+        .toolbar-info p  { font-size: .82rem; color: #6b7280; margin: 0; }
+
+        /* ── STATS CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.1rem 1.25rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,.06);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-icon.pendiente  { background: #fef3c7; color: #d97706; }
+        .stat-icon.proceso    { background: #dbeafe; color: #1d4ed8; }
+        .stat-icon.entregado  { background: #dcfce7; color: #15803d; }
+        .stat-icon.cancelado  { background: #fee2e2; color: #CC0000; }
+        .stat-num  { font-size: 1.6rem; font-weight: 800; color: #111827; line-height: 1; }
+        .stat-lbl  { font-size: .75rem; color: #6b7280; margin-top: .15rem; }
+
+        /* ── FILTROS ── */
+        .filtros-bar {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: #f3f4f6;
+            border: 1.5px solid transparent;
+            padding: .6rem 1rem;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+            transition: border-color .2s;
+        }
+        .search-wrap:focus-within { border-color: #CC0000; background: #fff; }
+        .search-wrap i { color: #CC0000; font-size: 1rem; flex-shrink: 0; }
+        .search-wrap input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: .875rem;
+            width: 100%;
+            color: #111827;
+            font-family: inherit;
+        }
+        select.filtro {
+            padding: .6rem .9rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: .875rem;
+            color: #111827;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        select.filtro:focus { border-color: #CC0000; }
+
+        /* ── TABLA ── */
+        .tabla-contenedor {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,.07);
+        }
+        .tabla-pedidos { width: 100%; border-collapse: collapse; }
+        .tabla-pedidos thead {
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .tabla-pedidos th {
+            padding: .9rem 1rem;
+            text-align: left;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+        .tabla-pedidos td {
+            padding: .85rem 1rem;
+            border-top: 1px solid #f3f4f6;
+            font-size: .875rem;
+            color: #111827;
+            vertical-align: middle;
+        }
+        .tabla-pedidos tbody tr:hover { background: #fafafa; }
+
+        /* ── BADGES ESTADO ── */
+        .badge-estado {
+            padding: .28rem .75rem;
+            border-radius: 999px;
+            font-size: .73rem;
+            font-weight: 700;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+        }
+        .estado-pendiente  { background: #fef3c7; color: #d97706; }
+        .estado-proceso    { background: #dbeafe; color: #1d4ed8; }
+        .estado-enviado    { background: #e0e7ff; color: #4338ca; }
+        .estado-entregado  { background: #dcfce7; color: #15803d; }
+        .estado-cancelado  { background: #fee2e2; color: #CC0000; }
+        .estado-default    { background: #f3f4f6; color: #6b7280; }
+
+        .acciones { display: flex; gap: .4rem; align-items: center; }
+
+        /* ── PAGINACIÓN ── */
+        .paginacion-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #f3f4f6;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+        .paginacion-info { font-size: .8rem; color: #6b7280; }
+        .paginacion-controles { display: flex; gap: .4rem; }
+        .pag-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1.5px solid #e5e7eb;
+            background: #fff;
+            color: #111827;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .pag-btn:hover { border-color: #CC0000; color: #CC0000; }
+        .pag-btn.activo { background: #CC0000; border-color: #CC0000; color: #fff; }
+        .pag-btn:disabled { opacity: .4; cursor: default; }
+
+        /* ── DETALLE PEDIDO ── */
+        .detalle-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .detalle-card {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+        }
+        .detalle-card h4 {
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #6b7280;
+            margin: 0 0 .6rem;
+        }
+        .detalle-card p {
+            font-size: .875rem;
+            color: #111827;
+            margin: .25rem 0;
+        }
+        .detalle-card strong { font-weight: 700; }
+
+        .items-pedido { margin-bottom: 1.25rem; }
+        .items-pedido h4 {
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #6b7280;
+            margin: 0 0 .75rem;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            padding: .65rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #f3f4f6;
+            flex-shrink: 0;
+        }
+        .item-img-ph {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #CC0000;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .item-info { flex: 1; }
+        .item-nombre { font-weight: 700; font-size: .875rem; color: #111827; }
+        .item-codigo { font-size: .75rem; color: #6b7280; }
+        .item-precio { text-align: right; }
+        .item-precio strong { display: block; font-weight: 700; color: #111827; }
+        .item-precio small  { font-size: .75rem; color: #6b7280; }
+
+        .detalle-total {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            padding: .85rem 0 0;
+            border-top: 2px solid #e5e7eb;
+            margin-top: .5rem;
+        }
+        .detalle-total span { font-size: .875rem; color: #6b7280; }
+        .detalle-total strong { font-size: 1.2rem; font-weight: 800; color: #111827; }
+
+        /* ── CAMBIO ESTADO ── */
+        .field-group { margin-bottom: 1rem; }
+        .field-group label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #6b7280;
+            margin-bottom: .35rem;
+        }
+        .field-group select {
+            width: 100%;
+            padding: .65rem .9rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: .875rem;
+            color: #111827;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            background: #fff;
+            font-family: inherit;
+        }
+        .field-group select:focus {
+            border-color: #CC0000;
+            box-shadow: 0 0 0 3px rgba(204,0,0,.1);
+        }
+
+        /* ── EMPTY STATE ── */
+        .estado-vacio {
+            text-align: center;
+            padding: 3.5rem 1rem;
+        }
+        .estado-vacio i { font-size: 3rem; color: #d1d5db; display: block; margin-bottom: .75rem; }
+        .estado-vacio p { color: #6b7280; font-size: .9rem; margin: 0; }
+
+        /* ── TOAST ── */
+        .toast-contenedor {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+        .toast-msg {
+            background: #111827;
+            color: #fff;
+            padding: .75rem 1.25rem;
+            border-radius: 10px;
+            font-size: .875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,.2);
+            animation: subirToast .25s ease;
+            min-width: 260px;
+        }
+        .toast-msg.toast-ok    { border-left: 4px solid #16a34a; }
+        .toast-msg.toast-error { border-left: 4px solid #CC0000; }
+        @keyframes subirToast {
+            from { transform: translateY(16px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .detalle-header { grid-template-columns: 1fr; }
+            .tabla-contenedor { overflow-x: auto; }
+            .tabla-pedidos { white-space: nowrap; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="overlay-menu" aria-hidden="true"></div>
+<output class="toast-contenedor" id="toast-contenedor" aria-live="polite"></output>
+
+<!-- ══════════════════════════════════════════
+     MODAL: DETALLE PEDIDO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-detalle" role="dialog" aria-modal="true" aria-labelledby="detalle-titulo">
+    <article class="modal-box">
+        <header class="modal-head">
+            <h2 id="detalle-titulo">Detalle del pedido</h2>
+            <button class="btn-close-x" onclick="cerrarDetalle()" aria-label="Cerrar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </header>
+        <section class="modal-body" id="detalle-contenido">
+            <!-- Se rellena dinámicamente -->
+        </section>
+        <footer class="modal-foot">
+            <button class="btn-ghost" type="button" onclick="cerrarDetalle()">Cerrar</button>
+            <button class="btn-honda" type="button" id="btn-cambiar-estado-detalle">
+                <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                Cambiar estado
+            </button>
+        </footer>
+    </article>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: CAMBIAR ESTADO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-estado" role="dialog" aria-modal="true" aria-labelledby="estado-titulo">
+    <article class="modal-box" style="max-width:400px">
+        <header class="modal-head">
+            <h2 id="estado-titulo">Cambiar estado del pedido</h2>
+            <button class="btn-close-x" onclick="cerrarModalEstado()" aria-label="Cerrar">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </header>
+        <section class="modal-body">
+            <p style="font-size:.875rem;color:#6b7280;margin-bottom:1.25rem">
+                Pedido <strong id="estado-pedido-num" style="color:#111827"></strong>
+            </p>
+            <div class="field-group">
+                <label for="select-estado">Nuevo estado</label>
+                <select id="select-estado">
+                    <!-- Se llena dinámicamente -->
+                </select>
+            </div>
+        </section>
+        <footer class="modal-foot">
+            <button class="btn-ghost" type="button" onclick="cerrarModalEstado()">Cancelar</button>
+            <button class="btn-honda" type="button" onclick="guardarEstado()">
+                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                Guardar cambio
+            </button>
+        </footer>
+    </article>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LAYOUT PRINCIPAL
+══════════════════════════════════════════ -->
+<div id="wrapper-dashboard">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar-admin" aria-label="Menú de administración">
+        <header class="sidebar-header">
+            <figure class="brand-logo">
+                <img src="../../assets/img/logo.png" alt="Logo MotoRepRacing10">
+            </figure>
+            <h2>Admin Panel</h2>
+        </header>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html" class="menu-link">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="productos.html" class="menu-link">
+                    <i class="bi bi-box-seam" aria-hidden="true"></i>
+                    <span>Repuestos</span>
+                </a>
+            </li>
+            <li>
+                <a href="pedidos.html" class="menu-link active" aria-current="page">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    <span>Pedidos</span>
+                </a>
+            </li>
+            <li>
+                <a href="usuarios.html" class="menu-link">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    <span>Usuarios</span>
+                </a>
+            </li>
+        </ul>
+        <footer class="sidebar-footer">
+            <button type="button" class="btn-logout" onclick="cerrarSesion()">
+                <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                <span>Cerrar Sesión</span>
+            </button>
+        </footer>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <header class="topbar-admin">
+            <button id="btn-menu" class="btn-menu-mobile" aria-label="Abrir menú" aria-expanded="false">
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+            <search class="topbar-search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="search" placeholder="Buscar repuestos, códigos, pedidos..." aria-label="Búsqueda global">
+            </search>
+            <section class="topbar-profile" aria-label="Perfil">
+                <span id="admin-name" class="profile-name">Cargando...</span>
+                <figure class="profile-avatar" aria-hidden="true">
+                    <i class="bi bi-person-circle"></i>
+                </figure>
+            </section>
+        </header>
+
+        <section class="dashboard-analytics" aria-label="Gestión de pedidos">
+
+            <!-- Toolbar -->
+            <header class="page-toolbar">
+                <div class="toolbar-info">
+                    <h1>Pedidos</h1>
+                    <p>Gestión y seguimiento de todos los pedidos</p>
+                </div>
+            </header>
+
+            <!-- Stats -->
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-icon pendiente"><i class="bi bi-clock" aria-hidden="true"></i></span>
+                    <div>
+                        <div class="stat-num" id="stat-pendiente">—</div>
+                        <div class="stat-lbl">Pendientes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon proceso"><i class="bi bi-arrow-repeat" aria-hidden="true"></i></span>
+                    <div>
+                        <div class="stat-num" id="stat-proceso">—</div>
+                        <div class="stat-lbl">En proceso</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon entregado"><i class="bi bi-check-circle" aria-hidden="true"></i></span>
+                    <div>
+                        <div class="stat-num" id="stat-entregado">—</div>
+                        <div class="stat-lbl">Entregados</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon cancelado"><i class="bi bi-x-circle" aria-hidden="true"></i></span>
+                    <div>
+                        <div class="stat-num" id="stat-cancelado">—</div>
+                        <div class="stat-lbl">Cancelados</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <search class="filtros-bar" aria-label="Filtros de pedidos">
+                <label class="visually-hidden" for="filtro-busqueda">Buscar pedido</label>
+                <div class="search-wrap">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" id="filtro-busqueda" placeholder="Buscar por N° pedido o cliente..." oninput="filtrarTabla()">
+                </div>
+                <label class="visually-hidden" for="filtro-estado">Filtrar por estado</label>
+                <select class="filtro" id="filtro-estado" onchange="filtrarTabla()">
+                    <option value="">Todos los estados</option>
+                    <!-- Se llena dinámicamente -->
+                </select>
+                <label class="visually-hidden" for="filtro-fecha">Filtrar por fecha</label>
+                <input type="date" class="filtro" id="filtro-fecha" onchange="filtrarTabla()" title="Filtrar por fecha">
+            </search>
+
+            <!-- Tabla -->
+            <section class="tabla-contenedor" aria-label="Lista de pedidos">
+                <table class="tabla-pedidos">
+                    <thead>
+                        <tr>
+                            <th scope="col">N° Pedido</th>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Productos</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-pedidos">
+                        <tr>
+                            <td colspan="7">
+                                <div class="estado-vacio">
+                                    <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                                    <p>Cargando pedidos...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <footer class="paginacion-bar">
+                    <p class="paginacion-info" id="pag-info" aria-live="polite">— pedidos</p>
+                    <nav class="paginacion-controles" id="pag-controles" aria-label="Páginas"></nav>
+                </footer>
+            </section>
+
+        </section>
+    </main>
+</div>
+
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script>
+/* ============================================================
+   ESTADO
+============================================================ */
+let todosLosPedidos  = [];
+let pedidosFiltrados = [];
+let paginaActual = 1;
+const POR_PAGINA = 10;
+let pedidoActual = null; // pedido abierto en el modal
+
+// Mapa de estados — ajusta los IDs según tu BD
+
+const ESTADOS = {
+    9:  { label: 'Pendiente',   clase: 'estado-pendiente', icono: 'bi-clock'        },
+    10: { label: 'Confirmado',  clase: 'estado-proceso',   icono: 'bi-check2'       },
+    11: { label: 'En proceso',  clase: 'estado-proceso',   icono: 'bi-arrow-repeat' },
+    12: { label: 'Enviado',     clase: 'estado-enviado',   icono: 'bi-truck'        },
+    13: { label: 'Entregado',   clase: 'estado-entregado', icono: 'bi-check-circle' },
+    14: { label: 'Cancelado',   clase: 'estado-cancelado', icono: 'bi-x-circle'     },
+};
+/* ============================================================
+   INIT
+============================================================ */
+verificarRol(1);
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const usuario = getUsuario();
+    if (usuario) {
+        document.getElementById('admin-name').textContent =
+            usuario.name || usuario.nombre || 'Administrador';
+    }
+
+    // Menú móvil
+    const btnMenu = document.getElementById('btn-menu');
+    const sidebar = document.querySelector('.sidebar-admin');
+    const overlay = document.getElementById('overlay-menu');
+
+    btnMenu?.addEventListener('click', () => {
+        const abierto = sidebar.classList.toggle('show');
+        overlay.classList.toggle('show', abierto);
+        btnMenu.setAttribute('aria-expanded', abierto);
+    });
+    overlay?.addEventListener('click', () => {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        btnMenu.setAttribute('aria-expanded', false);
+    });
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+    });
+
+    llenarFiltroEstados();
+    await cargarPedidos();
+});
+
+/* ============================================================
+   LLENAR FILTRO DE ESTADOS
+============================================================ */
+function llenarFiltroEstados() {
+    const sel = document.getElementById('filtro-estado');
+    Object.entries(ESTADOS).forEach(([id, est]) => {
+        sel.appendChild(new Option(est.label, id));
+    });
+}
+
+/* ============================================================
+   CARGAR PEDIDOS
+============================================================ */
+async function cargarPedidos() {
+    const tbody = document.getElementById('tbody-pedidos');
+    try {
+        const resp = await getPedidos();
+
+        if (resp?.status && resp?.data?.data)             todosLosPedidos = resp.data.data;
+        else if (resp?.status && Array.isArray(resp?.data)) todosLosPedidos = resp.data;
+        else if (Array.isArray(resp))                       todosLosPedidos = resp;
+        else todosLosPedidos = [];
+
+        pedidosFiltrados = [...todosLosPedidos];
+        paginaActual = 1;
+        actualizarStats();
+        renderizarTabla();
+
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `
+            <tr><td colspan="7">
+                <div class="estado-vacio">
+                    <i class="bi bi-exclamation-triangle" style="color:#CC0000" aria-hidden="true"></i>
+                    <p>Error al cargar los pedidos.</p>
+                </div>
+            </td></tr>`;
+    }
+}
+
+/* ============================================================
+   STATS
+============================================================ */
+function actualizarStats() {
+    const conteo = { pendiente: 0, proceso: 0, entregado: 0, cancelado: 0 };
+
+    todosLosPedidos.forEach(p => {
+        const eid = p.estado_id;    
+            if (eid === 9)             conteo.pendiente++;
+        else if (eid === 10 || eid === 11 || eid === 12) conteo.proceso++;
+        else if (eid === 13)       conteo.entregado++;
+        else if (eid === 14)       conteo.cancelado++;
+    });
+
+    document.getElementById('stat-pendiente').textContent  = conteo.pendiente;
+    document.getElementById('stat-proceso').textContent    = conteo.proceso;
+    document.getElementById('stat-entregado').textContent  = conteo.entregado;
+    document.getElementById('stat-cancelado').textContent  = conteo.cancelado;
+}
+
+/* ============================================================
+   RENDERIZAR TABLA
+============================================================ */
+function renderizarTabla() {
+    const tbody  = document.getElementById('tbody-pedidos');
+    const total  = pedidosFiltrados.length;
+    const inicio = (paginaActual - 1) * POR_PAGINA;
+    const fin    = Math.min(inicio + POR_PAGINA, total);
+    const pagina = pedidosFiltrados.slice(inicio, fin);
+
+    if (pagina.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="7">
+                <div class="estado-vacio">
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    <p>No se encontraron pedidos.</p>
+                </div>
+            </td></tr>`;
+        document.getElementById('pag-info').textContent = '0 pedidos';
+        document.getElementById('pag-controles').innerHTML = '';
+        return;
+    }
+
+    tbody.innerHTML = pagina.map(ped => {
+        const num      = ped.id ? `#${String(ped.id).padStart(4,'0')}` : '—';
+        const cliente  = ped.usuario?.name ?? ped.usuario?.nombre ?? ped.user?.name ?? 'Sin nombre';
+        const fecha = ped.fecha_pedido ? new Date(ped.fecha_pedido).toLocaleDateString('es-BO') : '—';        const items    = ped.detalles?.length ?? ped.items?.length ?? 0;
+        const total    = parseFloat(ped.total ?? ped.monto_total ?? 0).toFixed(2);
+        const estadoId = ped.estado_id ?? 0;  
+        const est      = ESTADOS[estadoId] ?? { label: ped.estado?.nombre ?? 'Desconocido', clase: 'estado-default', icono: 'bi-question-circle' };
+
+        return `
+        <tr>
+            <td><strong style="color:#CC0000">${num}</strong></td>
+            <td>
+                <strong>${cliente}</strong>
+                ${ped.usuario?.email ? `<small style="display:block;font-size:.75rem;color:#6b7280">${ped.usuario.email}</small>` : ''}
+            </td>
+            <td>${fecha}</td>
+            <td><span style="font-weight:600">${items}</span> <span style="color:#6b7280;font-size:.8rem">producto${items !== 1 ? 's' : ''}</span></td>
+            <td><strong>Bs. ${total}</strong></td>
+            <td>
+                <span class="badge-estado ${est.clase}">
+                    <i class="bi ${est.icono}" aria-hidden="true"></i>
+                    ${est.label}
+                </span>
+            </td>
+            <td>
+                <span class="acciones">
+                    <button class="btn-icono btn-ver" title="Ver detalle" onclick="verDetalle(${ped.id})">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                    <button class="btn-icono btn-estado" title="Cambiar estado" onclick="abrirModalEstado(${ped.id})">
+                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+                    </button>
+                </span>
+            </td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('pag-info').textContent =
+        `${inicio + 1}–${fin} de ${total} pedido${total !== 1 ? 's' : ''}`;
+
+    renderizarPaginacion(total);
+}
+
+/* ============================================================
+   PAGINACIÓN
+============================================================ */
+function renderizarPaginacion(total) {
+    const totalPags = Math.ceil(total / POR_PAGINA);
+    const nav = document.getElementById('pag-controles');
+    if (totalPags <= 1) { nav.innerHTML = ''; return; }
+
+    let html = `<button class="pag-btn" onclick="irPagina(${paginaActual - 1})" ${paginaActual === 1 ? 'disabled' : ''} aria-label="Anterior">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i></button>`;
+
+    for (let i = 1; i <= totalPags; i++) {
+        if (totalPags > 7 && i > 2 && i < totalPags - 1 && Math.abs(i - paginaActual) > 1) {
+            if (i === 3 || i === totalPags - 2) html += `<span style="padding:0 .3rem;line-height:34px;color:#9ca3af">…</span>`;
+            continue;
+        }
+        html += `<button class="pag-btn ${i === paginaActual ? 'activo' : ''}" onclick="irPagina(${i})" aria-label="Página ${i}" ${i === paginaActual ? 'aria-current="page"' : ''}>${i}</button>`;
+    }
+
+    html += `<button class="pag-btn" onclick="irPagina(${paginaActual + 1})" ${paginaActual === totalPags ? 'disabled' : ''} aria-label="Siguiente">
+        <i class="bi bi-chevron-right" aria-hidden="true"></i></button>`;
+
+    nav.innerHTML = html;
+}
+
+function irPagina(n) {
+    const total = Math.ceil(pedidosFiltrados.length / POR_PAGINA);
+    if (n < 1 || n > total) return;
+    paginaActual = n;
+    renderizarTabla();
+    document.querySelector('.tabla-contenedor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ============================================================
+   FILTROS
+============================================================ */
+function filtrarTabla() {
+    const busqueda   = document.getElementById('filtro-busqueda').value.toLowerCase().trim();
+    const estadoFil  = document.getElementById('filtro-estado').value;
+    const fechaFil   = document.getElementById('filtro-fecha').value;
+
+    pedidosFiltrados = todosLosPedidos.filter(ped => {
+        const num      = String(ped.id ?? '');
+        const cliente  = (ped.usuario?.name ?? ped.usuario?.nombre ?? ped.user?.name ?? '').toLowerCase();
+        const estadoId = String(ped.estado_id ?? '');       
+        const fecha = ped.fecha_pedido ? ped.fecha_pedido.substring(0, 10) : '';
+        const matchBusqueda = !busqueda  || num.includes(busqueda) || cliente.includes(busqueda);
+        const matchEstado   = !estadoFil || estadoId === estadoFil;
+        const matchFecha    = !fechaFil  || fecha === fechaFil;
+
+        return matchBusqueda && matchEstado && matchFecha;
+    });
+
+    paginaActual = 1;
+    renderizarTabla();
+}
+
+/* ============================================================
+   VER DETALLE
+============================================================ */
+async function verDetalle(id) {
+    const contenido = document.getElementById('detalle-contenido');
+    contenido.innerHTML = `
+        <div style="text-align:center;padding:2rem">
+            <i class="bi bi-arrow-repeat" style="font-size:2rem;color:#CC0000;animation:spin 1s linear infinite" aria-hidden="true"></i>
+            <p style="color:#6b7280;margin-top:.5rem">Cargando detalle...</p>
+        </div>`;
+
+    document.getElementById('modal-detalle').classList.add('show');
+
+    try {
+        const resp = await getPedido(id);
+        const ped  = resp?.data ?? resp;
+
+        if (!ped || !ped.id) {
+            contenido.innerHTML = `<p style="color:#CC0000;text-align:center">No se pudo cargar el pedido.</p>`;
+            return;
+        }
+
+        pedidoActual = ped;
+
+        const estadoId = ped.estado?.id ?? ped.estado_id ?? 0;
+        const est      = ESTADOS[estadoId] ?? { label: ped.estado?.nombre ?? '—', clase: 'estado-default', icono: 'bi-question-circle' };
+        const cliente  = ped.usuario?.name ?? ped.usuario?.nombre ?? ped.user?.name ?? 'Sin nombre';
+        const fecha = ped.fecha_pedido ? new Date(ped.fecha_pedido).toLocaleString('es-BO') : '—';        const total    = parseFloat(ped.total ?? ped.monto_total ?? 0).toFixed(2);
+        const detalles = ped.detalles ?? ped.items ?? [];
+
+        // Construir items
+        const itemsHtml = detalles.length > 0
+            ? detalles.map(item => {
+                const prod    = item.producto ?? {};
+                const nombre  = prod.nombre  ?? item.nombre  ?? 'Producto';
+                const codigo  = prod.codigo  ?? item.codigo  ?? '';
+                const cant    = item.cantidad ?? 1;
+                const precio  = parseFloat(item.precio_unitario ?? item.precio ?? prod.precio_venta ?? 0).toFixed(2);
+                const subtotal = parseFloat(item.subtotal ?? (cant * precio)).toFixed(2);
+                const imgPath  = prod.imagenes?.[0]?.imagen;
+                const imgHtml  = imgPath
+                    ? `<img src="http://localhost:8000/${imgPath}" class="item-img" alt="${nombre}" onerror="this.style.display='none'">`
+                    : `<span class="item-img-ph"><i class="bi bi-box-seam"></i></span>`;
+
+                return `
+                <div class="item-row">
+                    ${imgHtml}
+                    <div class="item-info">
+                        <div class="item-nombre">${nombre}</div>
+                        ${codigo ? `<div class="item-codigo">${codigo}</div>` : ''}
+                    </div>
+                    <div class="item-precio">
+                        <strong>Bs. ${subtotal}</strong>
+                        <small>${cant} × Bs. ${precio}</small>
+                    </div>
+                </div>`;
+            }).join('')
+            : `<p style="color:#6b7280;font-size:.875rem;text-align:center;padding:1rem 0">Sin productos registrados.</p>`;
+
+        contenido.innerHTML = `
+            <div class="detalle-header">
+                <div class="detalle-card">
+                    <h4>Información del pedido</h4>
+                    <p><strong>N° Pedido:</strong> #${String(ped.id).padStart(4,'0')}</p>
+                    <p><strong>Fecha:</strong> ${fecha}</p>
+                    <p><strong>Estado:</strong>
+                        <span class="badge-estado ${est.clase}" style="margin-left:.4rem">
+                            <i class="bi ${est.icono}" aria-hidden="true"></i> ${est.label}
+                        </span>
+                    </p>
+                </div>
+                <div class="detalle-card">
+                    <h4>Cliente</h4>
+                    <p><strong>${cliente}</strong></p>
+                    ${ped.usuario?.email ? `<p>${ped.usuario.email}</p>` : ''}
+                    ${ped.usuario?.telefono ? `<p><i class="bi bi-telephone" aria-hidden="true"></i> ${ped.usuario.telefono}</p>` : ''}
+                </div>
+            </div>
+
+            <div class="items-pedido">
+                <h4>Productos del pedido</h4>
+                ${itemsHtml}
+                <div class="detalle-total">
+                    <span>Total del pedido</span>
+                    <strong>Bs. ${total}</strong>
+                </div>
+            </div>`;
+
+        // Botón cambiar estado desde el detalle
+        document.getElementById('btn-cambiar-estado-detalle').onclick = () => {
+            cerrarDetalle();
+            abrirModalEstado(ped.id);
+        };
+
+    } catch (err) {
+        console.error(err);
+        contenido.innerHTML = `<p style="color:#CC0000;text-align:center">Error de conexión.</p>`;
+    }
+}
+
+function cerrarDetalle() {
+    document.getElementById('modal-detalle').classList.remove('show');
+    pedidoActual = null;
+}
+
+/* ============================================================
+   CAMBIAR ESTADO
+============================================================ */
+let idPedidoEstado = null;
+
+function abrirModalEstado(id) {
+    idPedidoEstado = id;
+    const ped = todosLosPedidos.find(p => p.id === id);
+
+    document.getElementById('estado-pedido-num').textContent =
+        `#${String(id).padStart(4,'0')}`;
+
+    const sel = document.getElementById('select-estado');
+    sel.innerHTML = '';
+    Object.entries(ESTADOS).forEach(([eid, est]) => {
+        const opt = new Option(est.label, eid);
+        if (String(ped?.estado?.id ?? ped?.estado_id) === eid) opt.selected = true;
+        sel.appendChild(opt);
+    });
+
+    document.getElementById('modal-estado').classList.add('show');
+}
+
+function cerrarModalEstado() {
+    document.getElementById('modal-estado').classList.remove('show');
+    idPedidoEstado = null;
+}
+
+async function guardarEstado() {
+    const nuevoEstado = document.getElementById('select-estado').value;
+    if (!idPedidoEstado || !nuevoEstado) return;
+
+    try {
+        const resp = await actualizarEstadoPedido(idPedidoEstado, parseInt(nuevoEstado));
+
+        if (resp?.status || resp?.data) {
+            mostrarToast('Estado actualizado correctamente.', 'ok');
+            cerrarModalEstado();
+            await cargarPedidos();
+        } else {
+            mostrarToast(resp?.message ?? 'Error al actualizar el estado.', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        mostrarToast('Error de conexión.', 'error');
+    }
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+function mostrarToast(mensaje, tipo = 'ok') {
+    const cont  = document.getElementById('toast-contenedor');
+    const icon  = tipo === 'ok' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+    const color = tipo === 'ok' ? '#16a34a' : '#CC0000';
+    const el = document.createElement('p');
+    el.className = `toast-msg toast-${tipo}`;
+    el.innerHTML = `<i class="bi ${icon}" style="color:${color};font-size:1.1rem" aria-hidden="true"></i> ${mensaje}`;
+    cont.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+}
+
+/* ============================================================
+   ESC
+============================================================ */
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { cerrarDetalle(); cerrarModalEstado(); }
+});
+</script>
+
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+</style>
+
+</body>
+</html>
